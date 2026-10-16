@@ -1,18 +1,25 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { SQLiteProvider } from 'expo-sqlite';
 import { useColorScheme } from 'react-native';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { migrate } from '@/db/migrations';
 
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
+  const scheme = useColorScheme();
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <SQLiteProvider databaseName="expense.db" onInit={migrate}>
+      <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="transaction/[id]" options={{ title: 'Transaction', presentation: 'modal' }} />
+          <Stack.Screen name="import-sms" options={{ title: 'Import SMS' }} />
+          <Stack.Screen name="accounts/index" options={{ title: 'Cards & accounts' }} />
+          <Stack.Screen name="accounts/new" options={{ title: 'Add card or account' }} />
+          <Stack.Screen name="categories" options={{ title: 'Categories' }} />
+          <Stack.Screen name="parsers/index" options={{ title: 'SMS configuration' }} />
+          <Stack.Screen name="parsers/new" options={{ title: 'Set up SMS format' }} />
+        </Stack>
+      </ThemeProvider>
+    </SQLiteProvider>
   );
 }
