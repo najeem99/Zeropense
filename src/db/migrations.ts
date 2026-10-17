@@ -114,7 +114,13 @@ const V5 = `
 DELETE FROM merchant_rules WHERE category_id = 'refund';
 `;
 
-const LATEST = 5;
+/** Money sent home (e.g. Aspora to India); Aspora is categorised automatically. */
+const V6 = `
+INSERT OR IGNORE INTO categories (id, name, kind, sort) VALUES ('remittance', 'Remittance', 'expense', 11);
+INSERT OR IGNORE INTO merchant_rules (merchant_key, category_id, updated_at) VALUES ('ASPORA', 'remittance', 0);
+`;
+
+const LATEST = 6;
 
 /** Runs on every app start via SQLiteProvider onInit. */
 export async function migrate(db: SQLiteDatabase): Promise<void> {
@@ -142,6 +148,9 @@ export async function migrate(db: SQLiteDatabase): Promise<void> {
     }
     if (version < 5) {
       await db.execAsync(V5);
+    }
+    if (version < 6) {
+      await db.execAsync(V6);
     }
   });
   await db.execAsync(`PRAGMA user_version = ${LATEST}`);

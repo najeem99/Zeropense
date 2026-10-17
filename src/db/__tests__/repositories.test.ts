@@ -118,7 +118,7 @@ async function configureEnbd(db: SQLiteDatabase, extra: Omit<SmsRule, 'id'>[] = 
   it('migrates idempotently', async () => {
     await migrate(db);
     const v = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
-    expect(v?.user_version).toBe(5);
+    expect(v?.user_version).toBe(6);
   });
 
   it('imports nothing until SMS is configured', async () => {
@@ -194,7 +194,9 @@ async function configureEnbd(db: SQLiteDatabase, extra: Omit<SmsRule, 'id'>[] = 
     await importSms(db, enbd('45.50', '1234'));
     const [tx] = await listPending(db);
     await saveTransaction(db, tx.id, { ...tx, categoryId: 'groceries' });
-    expect(await listRules(db)).toEqual([{ merchantKey: 'CARREFOUR', categoryId: 'groceries' }]);
+    expect(await listRules(db)).toEqual(
+      expect.arrayContaining([{ merchantKey: 'ASPORA', categoryId: 'remittance' }, { merchantKey: 'CARREFOUR', categoryId: 'groceries' }]),
+    );
 
     const next = await importSms(db, enbd('8.00', '1234', 120));
     expect(next.kind === 'draft' && next.draft.categoryId).toBe('groceries');

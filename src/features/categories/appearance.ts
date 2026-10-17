@@ -27,6 +27,7 @@ const LOOKS: Record<string, { icon: string; slot: number | null }> = {
   entertainment: { icon: '🎬', slot: MAGENTA },
   travel: { icon: '✈️', slot: BLUE },
   transfers: { icon: '↔️', slot: AQUA },
+  remittance: { icon: '💸', slot: ORANGE },
   other: { icon: '🏷️', slot: null },
   salary: { icon: '💼', slot: GREEN },
   refund: { icon: '↩️', slot: AQUA },
