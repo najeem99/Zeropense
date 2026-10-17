@@ -1,5 +1,6 @@
 import { merchantKey, suggestCategory } from '@/features/categories/categorizer';
 import { categoryLook } from '@/features/categories/appearance';
+import { dailySpending } from '@/features/dashboard/daily';
 import { buildSlices, layoutArcs } from '@/features/dashboard/spending-donut';
 import { summarize } from '@/features/dashboard/summary';
 import { findDuplicate } from '@/features/transactions/dedupe';
@@ -126,5 +127,41 @@ describe('spending donut', () => {
       [0, 298],
       [300, 98],
     ]);
+  });
+});
+
+describe('dailySpending', () => {
+  const oct = (d: number, h = 12) => new Date(2026, 9, d, h).getTime();
+  const tx = (d: number, minor: number, extra = {}) => ({
+    amountMinor: minor,
+    currency: 'AED' as const,
+    direction: 'debit' as const,
+    categoryId: null,
+    occurredAt: oct(d),
+    ...extra,
+  });
+
+  it('buckets money out by day and averages over the days so far', () => {
+    const r = dailySpending(
+      [
+        tx(1, 100),
+        tx(1, 50, { occurredAt: oct(1, 23) }),
+        tx(3, 300),
+        tx(2, 999, { direction: 'credit' }),
+        tx(2, 70, { currency: 'INR' }),
+      ],
+      'AED',
+      oct(1, 0),
+      31,
+      oct(3),
+    );
+    expect(r.days.slice(0, 4)).toEqual([150, 0, 300, 0]);
+    expect(r.days).toHaveLength(31);
+    expect(r.averageMinor).toBe(150); // 450 over 3 days
+    expect(r.peak).toEqual({ index: 2, minor: 300 });
+  });
+
+  it('has no peak without spending', () => {
+    expect(dailySpending([], 'AED', oct(1, 0), 31, oct(31)).peak).toBeNull();
   });
 });

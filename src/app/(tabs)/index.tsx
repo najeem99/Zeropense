@@ -4,6 +4,8 @@ import { View } from 'react-native';
 
 import { Amount, Body, Button, Card, Chip, ChipRow, Empty, Label, MonthSwitcher, Screen } from '@/components/ui';
 import { useDbQuery } from '@/db/live';
+import { dailySpending, dayAt, startOfDay, type DailySpending } from '@/features/dashboard/daily';
+import { DailyChart } from '@/features/dashboard/daily-chart';
 import { SpendingDonut } from '@/features/dashboard/spending-donut';
 import { summarize, type CurrencySummary } from '@/features/dashboard/summary';
 import { ScanCard } from '@/features/sms/scan-card';
@@ -25,7 +27,15 @@ export default function Overview() {
         listSummaryInputs(db, from, to),
         countPending(db),
       ]);
-      return { recent, pending, summaries: summarize(inputs) };
+      // Month: every day of it. All time: the last 30 days.
+      const now = Date.now();
+      const dayFrom = allTime ? dayAt(startOfDay(now), -29) : month;
+      const dayCount = allTime ? 30 : Math.round((addMonths(month, 1) - month) / 86_400_000);
+      const summaries = summarize(inputs).map((s) => ({
+        ...s,
+        daily: dailySpending(inputs, s.currency, dayFrom, dayCount, now),
+      }));
+      return { recent, pending, summaries, dayFrom };
     },
     allTime ? 'all' : String(month),
   );
@@ -72,7 +82,7 @@ export default function Overview() {
         ) : (
           <>
             {data.summaries.map((s) => (
-              <SummaryCard key={s.currency} summary={s} lookups={lookups} />
+              <SummaryCard key={s.currency} summary={s} daily={s.daily} dayFrom={data.dayFrom} lookups={lookups} />
             ))}
             <Card>
               <Label>Recent</Label>
@@ -88,7 +98,17 @@ export default function Overview() {
   );
 }
 
-function SummaryCard({ summary: s, lookups }: { summary: CurrencySummary; lookups: Lookups }) {
+function SummaryCard({
+  summary: s,
+  daily,
+  dayFrom,
+  lookups,
+}: {
+  summary: CurrencySummary;
+  daily: DailySpending;
+  dayFrom: number;
+  lookups: Lookups;
+}) {
   const c = useColors();
   return (
     <Card>
@@ -115,6 +135,7 @@ function SummaryCard({ summary: s, lookups }: { summary: CurrencySummary; lookup
         currency={s.currency}
         nameOf={(id) => lookups.categoryName(id) ?? 'Uncategorised'}
       />
+      <DailyChart data={daily} from={dayFrom} currency={s.currency} />
     </Card>
   );
 }

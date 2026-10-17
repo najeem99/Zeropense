@@ -54,3 +54,8 @@ export function otherColor(scheme: Scheme): string {
 export function tint(color: string): string {
   return `${color}26`;
 }
+
+/** Colour for a single-series chart (the first palette hue). */
+export function seriesColor(scheme: Scheme): string {
+  return PALETTE[scheme][BLUE];
+}

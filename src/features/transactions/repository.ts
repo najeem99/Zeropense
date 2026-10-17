@@ -62,9 +62,14 @@ export async function listAccepted(db: SQLiteDatabase, from: number, to: number,
 }
 
 /** Amount fields of every accepted transaction in [from, to), for totals (no row limit). */
-export async function listSummaryInputs(db: SQLiteDatabase, from: number, to: number): Promise<SummaryInput[]> {
-  return db.getAllAsync<SummaryInput>(
-    `SELECT amount_minor AS amountMinor, currency, direction, category_id AS categoryId FROM transactions
+export async function listSummaryInputs(
+  db: SQLiteDatabase,
+  from: number,
+  to: number,
+): Promise<(SummaryInput & { occurredAt: number })[]> {
+  return db.getAllAsync<SummaryInput & { occurredAt: number }>(
+    `SELECT amount_minor AS amountMinor, currency, direction, category_id AS categoryId, occurred_at AS occurredAt
+     FROM transactions
      WHERE status = 'accepted' AND occurred_at >= ? AND occurred_at < ?`,
     from,
     to,
