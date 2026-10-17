@@ -1,40 +1,55 @@
 export type CategoryLook = { icon: string; color: string };
+export type Scheme = 'light' | 'dark';
 
-/** Icon and accent color per default category. Colors are mid-tones that read on light and dark. */
-const LOOKS: Record<string, CategoryLook> = {
-  groceries: { icon: '🛒', color: '#2E9E5B' },
-  restaurant: { icon: '🍽️', color: '#E2703A' },
-  transport: { icon: '🚕', color: '#3B82F6' },
-  fuel: { icon: '⛽', color: '#D97706' },
-  shopping: { icon: '🛍️', color: '#C2479A' },
-  bills: { icon: '💡', color: '#CA8A04' },
-  rent: { icon: '🏠', color: '#7C5CDB' },
-  health: { icon: '💊', color: '#E0475B' },
-  entertainment: { icon: '🎬', color: '#9B51E0' },
-  subscriptions: { icon: '🔁', color: '#0EA5B7' },
-  travel: { icon: '✈️', color: '#2563EB' },
-  transfers: { icon: '↔️', color: '#64748B' },
-  other: { icon: '🏷️', color: '#78716C' },
-  salary: { icon: '💼', color: '#16A34A' },
-  refund: { icon: '↩️', color: '#0D9488' },
-  'other-income': { icon: '💰', color: '#15803D' },
+/**
+ * Validated 8-hue categorical palette (blue, orange, aqua, yellow, magenta, green, violet, red),
+ * with separate steps for each theme. Checked for colour-blind separation on both surfaces.
+ */
+const PALETTE: Record<Scheme, string[]> = {
+  light: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6', '#e34948'],
+  dark: ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767'],
+};
+const NEUTRAL: Record<Scheme, string> = { light: '#8a8984', dark: '#8f8e88' };
+
+const BLUE = 0, ORANGE = 1, AQUA = 2, YELLOW = 3, MAGENTA = 4, GREEN = 5, VIOLET = 6, RED = 7;
+
+/** Each category keeps its colour everywhere (icon, pill, chart), whatever its rank. */
+const LOOKS: Record<string, { icon: string; slot: number | null }> = {
+  groceries: { icon: '🛒', slot: GREEN },
+  restaurant: { icon: '🍽️', slot: ORANGE },
+  transport: { icon: '🚕', slot: BLUE },
+  fuel: { icon: '⛽', slot: YELLOW },
+  shopping: { icon: '🛍️', slot: MAGENTA },
+  bills: { icon: '💡', slot: AQUA },
+  rent: { icon: '🏠', slot: VIOLET },
+  subscriptions: { icon: '🔁', slot: RED },
+  health: { icon: '💊', slot: RED },
+  entertainment: { icon: '🎬', slot: MAGENTA },
+  travel: { icon: '✈️', slot: BLUE },
+  transfers: { icon: '↔️', slot: AQUA },
+  other: { icon: '🏷️', slot: null },
+  salary: { icon: '💼', slot: GREEN },
+  refund: { icon: '↩️', slot: AQUA },
+  'transfer-in': { icon: '📥', slot: BLUE },
+  'other-income': { icon: '💰', slot: VIOLET },
 };
 
-const UNCATEGORISED: CategoryLook = { icon: '❔', color: '#94A3B8' };
-
-/** Categories the user added get a stable color from their id. */
-const EXTRA_COLORS = ['#0891B2', '#DB2777', '#65A30D', '#EA580C', '#4F46E5', '#B45309'];
-
-export function categoryLook(categoryId: string | null): CategoryLook {
-  if (!categoryId) return UNCATEGORISED;
+export function categoryLook(categoryId: string | null, scheme: Scheme = 'light'): CategoryLook {
+  if (!categoryId) return { icon: '❔', color: NEUTRAL[scheme] };
   const known = LOOKS[categoryId];
-  if (known) return known;
+  if (known) return { icon: known.icon, color: known.slot === null ? NEUTRAL[scheme] : PALETTE[scheme][known.slot] };
+  // Categories the user added: a stable slot from the id.
   let h = 0;
   for (let i = 0; i < categoryId.length; i++) h = (h * 31 + categoryId.charCodeAt(i)) | 0;
-  return { icon: '🏷️', color: EXTRA_COLORS[Math.abs(h) % EXTRA_COLORS.length] };
+  return { icon: '🏷️', color: PALETTE[scheme][Math.abs(h) % 8] };
 }
 
-/** The accent color at low opacity, for icon backgrounds and pills. */
+/** Colour for the chart's "Other" slice. */
+export function otherColor(scheme: Scheme): string {
+  return NEUTRAL[scheme];
+}
+
+/** The accent colour at low opacity, for icon backgrounds and pills. */
 export function tint(color: string): string {
   return `${color}26`;
 }

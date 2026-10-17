@@ -1,4 +1,6 @@
 import { merchantKey, suggestCategory } from '@/features/categories/categorizer';
+import { categoryLook } from '@/features/categories/appearance';
+import { buildSlices, layoutArcs } from '@/features/dashboard/spending-donut';
 import { summarize } from '@/features/dashboard/summary';
 import { findDuplicate } from '@/features/transactions/dedupe';
 import { parseSmsDate } from '@/lib/dates';
@@ -80,13 +82,49 @@ describe('summarize', () => {
         currency: 'AED',
         inMinor: 100000,
         outMinor: 10000,
+        refundMinor: 0,
         netMinor: 90000,
         topSpending: [
           { categoryId: 'food', minor: 5000 },
           { categoryId: 'rent', minor: 5000 },
         ],
       },
-      { currency: 'INR', inMinor: 0, outMinor: 70000, netMinor: -70000, topSpending: [{ categoryId: null, minor: 70000 }] },
+      { currency: 'INR', inMinor: 0, outMinor: 70000, refundMinor: 0, netMinor: -70000, topSpending: [{ categoryId: null, minor: 70000 }] },
+    ]);
+  });
+});
+
+describe('refunds', () => {
+  it('lower spending instead of counting as income', () => {
+    const [s] = summarize([
+      { amountMinor: 1200, currency: 'AED', direction: 'debit', categoryId: 'shopping' },
+      { amountMinor: 1200, currency: 'AED', direction: 'credit', categoryId: 'refund' },
+      { amountMinor: 50000, currency: 'AED', direction: 'credit', categoryId: 'salary' },
+    ]);
+    expect(s).toMatchObject({ inMinor: 50000, outMinor: 0, refundMinor: 1200, netMinor: 50000 });
+  });
+});
+
+describe('spending donut', () => {
+  const nameOf = (id: string | null) => id ?? 'Uncategorised';
+
+  it('keeps five slices and folds the rest into a grey Other', () => {
+    const spending = ['groceries', 'restaurant', 'fuel', 'rent', 'shopping', 'travel', 'health'].map((id, i) => ({
+      categoryId: id,
+      minor: (10 - i) * 100,
+    }));
+    const slices = buildSlices(spending, nameOf, 'light');
+    expect(slices.map((s) => s.label)).toEqual(['groceries', 'restaurant', 'fuel', 'rent', 'Other (3)']);
+    expect(slices[4].minor).toBe(600 + 500 + 400);
+    expect(slices[0].color).toBe(categoryLook('groceries', 'light').color);
+  });
+
+  it('lays the arcs end to end around the ring', () => {
+    const slices = buildSlices([{ categoryId: 'rent', minor: 300 }, { categoryId: 'fuel', minor: 100 }], nameOf, 'dark');
+    const arcs = layoutArcs(slices, 400);
+    expect(arcs.map((a) => [a.offset, a.dash])).toEqual([
+      [0, 298],
+      [300, 98],
     ]);
   });
 });

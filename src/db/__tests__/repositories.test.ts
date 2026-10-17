@@ -118,7 +118,7 @@ async function configureEnbd(db: SQLiteDatabase, extra: Omit<SmsRule, 'id'>[] = 
   it('migrates idempotently', async () => {
     await migrate(db);
     const v = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
-    expect(v?.user_version).toBe(3);
+    expect(v?.user_version).toBe(5);
   });
 
   it('imports nothing until SMS is configured', async () => {

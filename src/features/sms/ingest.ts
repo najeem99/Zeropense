@@ -5,6 +5,7 @@ import type { Currency, Direction } from '@/lib/money';
 
 import { findAmountCandidates } from './candidates';
 import { applyCustomParser, type CustomParser } from './custom-parser';
+import { incomeCategory, incomeLabel } from './extract';
 import { skipReason } from './filters';
 import { applyRule, ruleFor, senderKey, type SmsRule } from './templates';
 import type { ParsedSms, RawSms } from './types';
@@ -118,17 +119,21 @@ export function processSms(sms: RawSms, ctx: IngestContext): IngestResult {
     accountId,
   });
 
+  const isIncome = parsed.direction === 'credit';
+  const merchant = parsed.merchant ?? (isIncome ? incomeLabel(sms.body) : null);
+  const categoryId = suggestCategory(merchant, ctx.rules) ?? (isIncome ? incomeCategory(sms.body) : null);
+
   return {
     kind: 'draft',
     draft: {
       amountMinor: parsed.amountMinor,
       currency: parsed.currency,
       direction: parsed.direction,
-      merchant: parsed.merchant,
+      merchant,
       occurredAt,
       accountId,
       accountHint: parsed.accountHint,
-      categoryId: suggestCategory(parsed.merchant, ctx.rules),
+      categoryId,
       duplicateOfId,
       smsHash: smsHash(sms),
       smsSender: sms.sender,

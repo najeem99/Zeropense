@@ -4,14 +4,14 @@ import { View } from 'react-native';
 
 import { Amount, Body, Button, Card, Chip, ChipRow, Empty, Label, MonthSwitcher, Screen } from '@/components/ui';
 import { useDbQuery } from '@/db/live';
-import { categoryLook } from '@/features/categories/appearance';
+import { SpendingDonut } from '@/features/dashboard/spending-donut';
 import { summarize, type CurrencySummary } from '@/features/dashboard/summary';
 import { ScanCard } from '@/features/sms/scan-card';
 import { TransactionRow, useLookups, type Lookups } from '@/features/transactions/components';
 import { countPending, listAccepted, listSummaryInputs } from '@/features/transactions/repository';
 import { addMonths, formatMonth, startOfMonth } from '@/lib/dates';
 import { formatMoney } from '@/lib/money';
-import { radius, spacing, useColors } from '@/theme';
+import { spacing, useColors } from '@/theme';
 
 export default function Overview() {
   const [month, setMonth] = useState(() => startOfMonth(Date.now()));
@@ -90,8 +90,6 @@ export default function Overview() {
 
 function SummaryCard({ summary: s, lookups }: { summary: CurrencySummary; lookups: Lookups }) {
   const c = useColors();
-  const top = s.topSpending.slice(0, 5);
-  const max = top[0]?.minor ?? 1;
   return (
     <Card>
       <Label>{s.currency}</Label>
@@ -107,32 +105,16 @@ function SummaryCard({ summary: s, lookups }: { summary: CurrencySummary; lookup
           }
         />
       </View>
-      {top.length > 0 ? (
-        <View style={{ gap: spacing.sm, marginTop: spacing.sm }}>
-          {top.map((t) => (
-            <View key={t.categoryId ?? 'none'} style={{ gap: 4 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Body style={{ fontSize: 14 }}>
-                  {categoryLook(t.categoryId).icon} {lookups.categoryName(t.categoryId) ?? 'Uncategorised'}
-                </Body>
-                <Body muted style={{ fontSize: 14 }}>
-                  {formatMoney(t.minor, s.currency)}
-                </Body>
-              </View>
-              <View style={{ height: 6, borderRadius: radius.pill, backgroundColor: c.surfaceAlt }}>
-                <View
-                  style={{
-                    height: 6,
-                    borderRadius: radius.pill,
-                    backgroundColor: categoryLook(t.categoryId).color,
-                    width: `${Math.max(4, (t.minor / max) * 100)}%`,
-                  }}
-                />
-              </View>
-            </View>
-          ))}
-        </View>
+      {s.refundMinor > 0 ? (
+        <Body muted style={{ fontSize: 13 }}>
+          Money out is after {formatMoney(s.refundMinor, s.currency)} of refunds.
+        </Body>
       ) : null}
+      <SpendingDonut
+        spending={s.topSpending}
+        currency={s.currency}
+        nameOf={(id) => lookups.categoryName(id) ?? 'Uncategorised'}
+      />
     </Card>
   );
 }

@@ -23,21 +23,35 @@ export function isPersonalSender(sender: string): boolean {
 }
 
 const TEMPLATE_WORDS = 8;
+/** Upper-case words that are part of a bank's wording, not a merchant or name. */
+const KEEP_CAPS = new Set([
+  'AED', 'INR', 'RS', 'UPI', 'ATM', 'POS', 'OTP', 'NEFT', 'IMPS', 'RTGS', 'EMI', 'SMS', 'ID', 'PIN',
+  'IBAN', 'VPA', 'AC', 'CR', 'DR', 'UAE', 'ENBD', 'ADCB', 'FAB', 'HDFC', 'ICICI', 'SBI',
+]);
 
 /**
- * The fixed opening of a message with numbers masked, used to group one sender's SMS
- * into kinds: "Purchase of AED 45.50 with Credit Card ending 1234 at…" →
- * "purchase of aed # with credit card ending".
+ * The fixed opening of a message with numbers and merchant names masked, used to group one
+ * sender's SMS into kinds: "Purchase amount of AED 12.00 at GLOBALFASHION.AE on…" →
+ * "purchase amount of aed # at * on". Merchants are spotted as upper-case words in an
+ * otherwise mixed-case message; all-caps messages are left as they are.
  */
 export function templateKey(body: string): string {
-  return body
-    .toLowerCase()
+  const words = body
     .replace(/\d[\d,]*(?:\.\d+)?/g, '#')
-    .replace(/[^a-z#]+/g, ' ')
-    .trim()
-    .split(' ')
-    .slice(0, TEMPLATE_WORDS)
-    .join(' ');
+    .split(/[^A-Za-z#]+/)
+    .filter(Boolean);
+  const lettered = words.filter((w) => /[A-Za-z]/.test(w));
+  const isCaps = (w: string) => /[A-Z]{2}/.test(w) && w === w.toUpperCase();
+  const maskCaps = lettered.filter(isCaps).length / Math.max(1, lettered.length) < 0.5;
+
+  const out: string[] = [];
+  for (const w of words) {
+    const t = maskCaps && isCaps(w) && !KEEP_CAPS.has(w.replace(/#/g, '')) ? '*' : w.toLowerCase();
+    if (t === '*' && out[out.length - 1] === '*') continue;
+    out.push(t);
+    if (out.length === TEMPLATE_WORDS) break;
+  }
+  return out.join(' ');
 }
 
 /** A message kind the user configured during SMS setup. */

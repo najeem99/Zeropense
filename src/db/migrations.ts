@@ -104,7 +104,17 @@ CREATE TABLE sms_rules (                       -- message kinds configured in SM
 );
 `;
 
-const LATEST = 3;
+/** Income category for money other people send. */
+const V4 = `
+INSERT OR IGNORE INTO categories (id, name, kind, sort) VALUES ('transfer-in', 'Money received', 'income', 100);
+`;
+
+/** Refunds are never a shop's category: drop any that were learned before that rule. */
+const V5 = `
+DELETE FROM merchant_rules WHERE category_id = 'refund';
+`;
+
+const LATEST = 5;
 
 /** Runs on every app start via SQLiteProvider onInit. */
 export async function migrate(db: SQLiteDatabase): Promise<void> {
@@ -126,6 +136,12 @@ export async function migrate(db: SQLiteDatabase): Promise<void> {
     }
     if (version < 3) {
       await db.execAsync(V3);
+    }
+    if (version < 4) {
+      await db.execAsync(V4);
+    }
+    if (version < 5) {
+      await db.execAsync(V5);
     }
   });
   await db.execAsync(`PRAGMA user_version = ${LATEST}`);

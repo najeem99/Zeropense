@@ -72,6 +72,13 @@ export async function createAccount(db: SQLiteDatabase, input: Omit<Account, 'id
   return linked;
 }
 
+export async function renameAccount(db: SQLiteDatabase, id: string, name: string): Promise<void> {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  await db.runAsync('UPDATE accounts SET name = ? WHERE id = ?', trimmed, id);
+  notifyDbChanged();
+}
+
 /** Transactions keep their data; they just lose the account link. */
 export async function deleteAccount(db: SQLiteDatabase, id: string): Promise<void> {
   await db.runAsync('DELETE FROM accounts WHERE id = ?', id);

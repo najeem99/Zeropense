@@ -4,7 +4,7 @@ import { notifyDbChanged } from '@/db/live';
 import { newId } from '@/lib/id';
 import type { Currency, Direction } from '@/lib/money';
 
-import type { SmsRule } from './templates';
+import { templateKey, type SmsRule } from './templates';
 
 type Row = {
   id: string;
@@ -23,7 +23,8 @@ export async function listSmsRules(db: SQLiteDatabase): Promise<SmsRule[]> {
   return rows.map((r) => ({
     id: r.id,
     senderKey: r.sender_key,
-    templateKey: r.template_key,
+    // Recomputed from the sample so rules keep matching if the key format changes.
+    templateKey: templateKey(r.sample),
     action: r.action,
     amountIndex: r.amount_index,
     direction: r.direction,

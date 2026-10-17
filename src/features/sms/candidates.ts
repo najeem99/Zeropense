@@ -62,7 +62,7 @@ export function findAmountCandidates(body: string): AmountCandidate[] {
   return out.sort((a, b) => a.start - b.start);
 }
 
-const DIGITS_AFTER = /(?:[x*]+|ending\s*(?:with|in)?\s*|(?:card|a\/c|acct|account|ac)\.?\s*(?:no\.?\s*)?)(\d{3,6})\b/gi;
+const DIGITS_AFTER = /(?:[x*]+|ending\s*(?:with|in)?\s*[:\-]?\s*|(?:card|a\/c|acct|account|ac)\.?\s*(?:no\.?\s*)?)(\d{3,6})\b/gi;
 
 /** Numbers that look like a masked card/account ("XX1234", "card ending 1234", "A/C *5678"). */
 export function findDigitsCandidates(body: string): DigitsCandidate[] {

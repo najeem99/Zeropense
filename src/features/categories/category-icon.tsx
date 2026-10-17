@@ -1,12 +1,12 @@
 import { Text, View } from 'react-native';
 
-import { radius, spacing } from '@/theme';
+import { radius, spacing, useColors, useScheme } from '@/theme';
 
 import { categoryLook, tint } from './appearance';
 
 /** Round icon in the category's color, e.g. 🛒 on green for Groceries. */
 export function CategoryIcon({ categoryId, size = 36 }: { categoryId: string | null; size?: number }) {
-  const look = categoryLook(categoryId);
+  const look = categoryLook(categoryId, useScheme());
   return (
     <View
       style={{
@@ -24,7 +24,8 @@ export function CategoryIcon({ categoryId, size = 36 }: { categoryId: string | n
 
 /** Category name as a small colored pill. */
 export function CategoryPill({ categoryId, name }: { categoryId: string | null; name: string }) {
-  const look = categoryLook(categoryId);
+  const look = categoryLook(categoryId, useScheme());
+  const c = useColors();
   return (
     <View
       style={{
@@ -38,7 +39,7 @@ export function CategoryPill({ categoryId, name }: { categoryId: string | null; 
         backgroundColor: tint(look.color),
       }}>
       <Text style={{ fontSize: 11 }}>{look.icon}</Text>
-      <Text style={{ fontSize: 12, fontWeight: '600', color: look.color }}>{name}</Text>
+      <Text style={{ fontSize: 12, fontWeight: '600', color: c.text }}>{name}</Text>
     </View>
   );
 }

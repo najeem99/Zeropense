@@ -3,7 +3,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { notifyDbChanged } from '@/db/live';
 import { newId } from '@/lib/id';
 
-import { merchantKey, type MerchantRule } from './categorizer';
+import { merchantKey, REFUND_CATEGORY, type MerchantRule } from './categorizer';
 
 export type CategoryKind = 'expense' | 'income';
 export type Category = { id: string; name: string; kind: CategoryKind };
@@ -38,7 +38,7 @@ export async function listRules(db: SQLiteDatabase): Promise<MerchantRule[]> {
 
 /** Remember "this merchant → this category" for future SMS. Caller notifies. */
 export async function learnRule(db: SQLiteDatabase, merchant: string | null, categoryId: string | null): Promise<void> {
-  if (!merchant || !categoryId) return;
+  if (!merchant || !categoryId || categoryId === REFUND_CATEGORY) return;
   const key = merchantKey(merchant);
   if (!key) return;
   await db.runAsync(

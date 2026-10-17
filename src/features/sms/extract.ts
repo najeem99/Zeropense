@@ -19,9 +19,11 @@ const AMOUNT_RE = new RegExp(`${CUR}\\s*${NUM}|${NUM}\\s*(INR|AED)\\b`, 'gi');
 const NOT_TXN_AMOUNT = /(bal(ance)?|limit|avl|available|outstanding|due)[\s.:a-z]{0,12}$/i;
 
 const DEBIT_WORDS = /\b(debited|spent|withdrawn|paid|purchase|sent|deducted|debit)\b/i;
-const CREDIT_WORDS = /\b(credited|received|deposited|refund(ed)?|reversed|cashback|credit)\b/i;
+const CREDIT_WORDS = /\b(credited|received|deposited|refund(ed)?|reversed|reversal|cashback|credit(?!\s*card))\b/i;
+/** A refund or reversal is money back even when the message opens with the purchase. */
+const REFUND_WORDS = /\b(refund(ed)?|reversed|reversal)\b/i;
 
-const STOP = String.raw`(?=\s+(?:on|via|ref|refno|txn|using|for|from|is|was|dated|avl|upi|not|\()\b|[.,;\n]|$)`;
+const STOP = String.raw`(?=\s+(?:on|via|ref|refno|txn|using|for|from|is|was|dated|avl|upi|not|\()\b|[,;\n]|\.(?=\s|$)|$)`;
 const NAME = String.raw`([A-Za-z][A-Za-z0-9 &.'@_\-*/]{1,40}?)`;
 /** "Merchant: AMRK AND SAVE," / "Location - LULU" style banks that label the field. */
 const LABELED_MERCHANT = /\b(?:merchant(?:\s+name)?|location|payee|beneficiary|at)\s*[:\-]\s*([A-Za-z][^,;\n]{1,40}?)(?=\s*(?:[,;\n]|\.\s|\.$|$))/i;
@@ -40,7 +42,7 @@ const CREDIT_MERCHANT = [
 const SELF_REF = /^(your|you|a\/c|ac|acct|account|card|xx)\b/i;
 
 const ACCOUNT_RE = [
-  /\b(?:a\/c|acct|account|ac|card)\b\.?\s*(?:no\.?\s*)?(?:ending\s*(?:with|in)?\s*)?[x*]*\s*(\d{3,6})\b/i,
+  /\b(?:a\/c|acct|account|ac|card)\b\.?\s*(?:no\.?\s*)?(?:ending\s*(?:with|in)?\s*)?[:\-]?\s*[x*]*\s*(\d{3,6})\b/i,
   /\b[x*]{2,}(\d{3,6})\b/i,
 ];
 
@@ -66,6 +68,7 @@ function findAmount(body: string, hints: ExtractHints): { minor: number; currenc
 }
 
 export function findDirection(body: string): Direction | null {
+  if (REFUND_WORDS.test(body)) return 'credit';
   const d = body.search(DEBIT_WORDS);
   const c = body.search(CREDIT_WORDS);
   if (d === -1 && c === -1) return null;
@@ -109,6 +112,24 @@ export function smsSnippet(body: string): string {
     .split(' ')
     .slice(0, 6)
     .join(' ');
+}
+
+const SALARY_WORDS = /\b(salary|payroll|wps)\b/i;
+const TRANSFER_IN_WORDS = /\b(transfer(red)?|remittance|received|aani|imps|neft|rtgs|upi|ipi)\b/i;
+
+/** For money coming in: which default income category it belongs to, if it's clear. */
+export function incomeCategory(body: string): 'salary' | 'refund' | 'transfer-in' | null {
+  if (SALARY_WORDS.test(body)) return 'salary';
+  if (REFUND_WORDS.test(body)) return 'refund';
+  if (TRANSFER_IN_WORDS.test(body)) return 'transfer-in';
+  return null;
+}
+
+/** A name for income messages that name no sender, e.g. "Salary Deposited". */
+export function incomeLabel(body: string): string | null {
+  if (SALARY_WORDS.test(body)) return 'Salary';
+  if (REFUND_WORDS.test(body)) return 'Refund';
+  return null;
 }
 
 export function findAccount(body: string): string | null {
