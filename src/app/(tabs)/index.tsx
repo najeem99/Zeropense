@@ -4,6 +4,7 @@ import { View } from 'react-native';
 
 import { Amount, Body, Button, Card, Chip, ChipRow, Empty, Label, MonthSwitcher, Screen } from '@/components/ui';
 import { useDbQuery } from '@/db/live';
+import { categoryLook } from '@/features/categories/appearance';
 import { summarize, type CurrencySummary } from '@/features/dashboard/summary';
 import { ScanCard } from '@/features/sms/scan-card';
 import { TransactionRow, useLookups, type Lookups } from '@/features/transactions/components';
@@ -111,7 +112,9 @@ function SummaryCard({ summary: s, lookups }: { summary: CurrencySummary; lookup
           {top.map((t) => (
             <View key={t.categoryId ?? 'none'} style={{ gap: 4 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Body style={{ fontSize: 14 }}>{lookups.categoryName(t.categoryId) ?? 'Uncategorised'}</Body>
+                <Body style={{ fontSize: 14 }}>
+                  {categoryLook(t.categoryId).icon} {lookups.categoryName(t.categoryId) ?? 'Uncategorised'}
+                </Body>
                 <Body muted style={{ fontSize: 14 }}>
                   {formatMoney(t.minor, s.currency)}
                 </Body>
@@ -121,7 +124,7 @@ function SummaryCard({ summary: s, lookups }: { summary: CurrencySummary; lookup
                   style={{
                     height: 6,
                     borderRadius: radius.pill,
-                    backgroundColor: c.primary,
+                    backgroundColor: categoryLook(t.categoryId).color,
                     width: `${Math.max(4, (t.minor / max) * 100)}%`,
                   }}
                 />

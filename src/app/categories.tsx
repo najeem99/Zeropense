@@ -13,6 +13,7 @@ import {
   type Category,
   type CategoryKind,
 } from '@/features/categories/repository';
+import { categoryLook } from '@/features/categories/appearance';
 
 export default function Categories() {
   const db = useSQLiteContext();
@@ -56,7 +57,7 @@ export default function Categories() {
           {data.categories
             .filter((c) => c.kind === k)
             .map((c) => (
-              <Row key={c.id} title={c.name} right={<Button title="Delete" variant="ghost" onPress={() => confirmDelete(c)} />} />
+              <Row key={c.id} title={`${categoryLook(c.id).icon}  ${c.name}`} right={<Button title="Delete" variant="ghost" onPress={() => confirmDelete(c)} />} />
             ))}
         </Card>
       ))}

@@ -6,6 +6,7 @@ import { Alert, View } from 'react-native';
 import { Body, Button, Card, Chip, ChipRow, Field, Label, Screen } from '@/components/ui';
 import { useDbQuery } from '@/db/live';
 import { accountLabel } from '@/features/accounts/repository';
+import { categoryLook } from '@/features/categories/appearance';
 import { useLookups, type Lookups } from '@/features/transactions/components';
 import {
   getTransaction,
@@ -152,7 +153,7 @@ function TransactionForm({ tx, lookups }: { tx: Transaction | null; lookups: Loo
           {categories.map((cat) => (
             <Chip
               key={cat.id}
-              label={cat.name}
+              label={`${categoryLook(cat.id).icon} ${cat.name}`}
               selected={form.categoryId === cat.id}
               onPress={() => set({ categoryId: form.categoryId === cat.id ? null : cat.id })}
             />

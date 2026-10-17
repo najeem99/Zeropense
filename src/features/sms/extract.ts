@@ -23,12 +23,16 @@ const CREDIT_WORDS = /\b(credited|received|deposited|refund(ed)?|reversed|cashba
 
 const STOP = String.raw`(?=\s+(?:on|via|ref|refno|txn|using|for|from|is|was|dated|avl|upi|not|\()\b|[.,;\n]|$)`;
 const NAME = String.raw`([A-Za-z][A-Za-z0-9 &.'@_\-*/]{1,40}?)`;
+/** "Merchant: AMRK AND SAVE," / "Location - LULU" style banks that label the field. */
+const LABELED_MERCHANT = /\b(?:merchant(?:\s+name)?|location|payee|beneficiary|at)\s*[:\-]\s*([A-Za-z][^,;\n]{1,40}?)(?=\s*(?:[,;\n]|\.\s|\.$|$))/i;
 const DEBIT_MERCHANT = [
+  LABELED_MERCHANT,
   new RegExp(String.raw`\b(?:at|@)\s+${NAME}${STOP}`, 'i'),
   new RegExp(String.raw`\b(?:to|towards)\s+(?:VPA\s+)?${NAME}${STOP}`, 'i'),
   /\bInfo:?\s*([A-Za-z][^.\n]{1,40})/i,
 ];
 const CREDIT_MERCHANT = [
+  LABELED_MERCHANT,
   new RegExp(String.raw`\b(?:from|by)\s+(?:VPA\s+)?${NAME}${STOP}`, 'i'),
   /\bInfo:?\s*([A-Za-z][^.\n]{1,40})/i,
 ];
@@ -88,6 +92,23 @@ export function findMerchant(body: string, direction: Direction, hints: ExtractH
     if (name) return name;
   }
   return null;
+}
+
+/**
+ * A short label for a transaction whose merchant wasn't found: the counterparty if either
+ * direction's patterns find one, else the message's opening words without numbers.
+ */
+export function smsSnippet(body: string): string {
+  const name = findMerchant(body, 'debit') ?? findMerchant(body, 'credit');
+  if (name) return name;
+  return body
+    .replace(/\s+/g, ' ')
+    .replace(/(?:INR|Rs\.?|₹|AED|Dhs?)?\s*\d[\d,.*/:-]*/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .slice(0, 6)
+    .join(' ');
 }
 
 export function findAccount(body: string): string | null {

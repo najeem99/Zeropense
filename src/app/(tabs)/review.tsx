@@ -6,7 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Amount, Body, Button, Card, Empty, Label, Screen } from '@/components/ui';
 import { useDbQuery } from '@/db/live';
-import { useLookups, type Lookups } from '@/features/transactions/components';
+import { CategoryIcon, CategoryPill } from '@/features/categories/category-icon';
+import { transactionTitle, useLookups, type Lookups } from '@/features/transactions/components';
 import { approveAllPending, listPending, setStatus, type Transaction } from '@/features/transactions/repository';
 import { formatDateTime } from '@/lib/dates';
 import { radius, spacing, useColors } from '@/theme';
@@ -100,21 +101,24 @@ function ReviewCard({
 }) {
   const c = useColors();
   const [showSms, setShowSms] = useState(false);
+  const title = transactionTitle(tx);
 
   return (
     <Card>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: spacing.sm }}>
-        <Body style={{ fontWeight: '600', flex: 1 }} numberOfLines={1}>
-          {tx.merchant ?? 'Unknown merchant'}
-        </Body>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+        <CategoryIcon categoryId={tx.categoryId} size={40} />
+        <View style={{ flex: 1, gap: 4 }}>
+          <Body
+            numberOfLines={1}
+            style={title.isSnippet ? { fontSize: 13, fontStyle: 'italic', color: c.textMuted } : { fontWeight: '600' }}>
+            {title.text}
+          </Body>
+          <CategoryPill categoryId={tx.categoryId} name={lookups.categoryName(tx.categoryId) ?? 'Uncategorised'} />
+        </View>
         <Amount minor={tx.amountMinor} currency={tx.currency} direction={tx.direction} style={{ fontSize: 18 }} />
       </View>
-      <Body muted style={{ fontSize: 14 }}>
-        {[
-          formatDateTime(tx.occurredAt),
-          lookups.cardName(tx) ?? 'No card',
-          lookups.categoryName(tx.categoryId) ?? 'Uncategorised',
-        ].join(' · ')}
+      <Body muted style={{ fontSize: 13 }}>
+        {[formatDateTime(tx.occurredAt), lookups.cardName(tx) ?? 'No card'].join(' · ')}
       </Body>
 
       {tx.accountHint && !tx.accountId ? (

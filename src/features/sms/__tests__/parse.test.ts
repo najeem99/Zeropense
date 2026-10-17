@@ -1,3 +1,4 @@
+import { findMerchant, smsSnippet } from '../extract';
 import { skipReason } from '../filters';
 import { parseSms } from '../parse';
 
@@ -88,5 +89,21 @@ describe('skipReason', () => {
 
   it('keeps a normal debit', () => {
     expect(skipReason('Rs 500 debited from A/C XX12 to SWIGGY')).toBeNull();
+  });
+});
+
+describe('merchant names', () => {
+  it('reads labelled merchant fields', () => {
+    expect(findMerchant('Card XX1234 Purchase, Amount: AED 12.00, Merchant: AMRK AND SAVE, Date 12/10/26', 'debit')).toBe(
+      'AMRK AND SAVE',
+    );
+    expect(findMerchant('AED 8.50 spent on card 1234. Location: LULU HYPERMARKET. Avl bal AED 99', 'debit')).toBe(
+      'LULU HYPERMARKET',
+    );
+  });
+
+  it('falls back to a short snippet without numbers when no merchant is found', () => {
+    expect(smsSnippet('Your card 1234 was charged AED 45.00 today')).toBe('Your card was charged today');
+    expect(smsSnippet('Purchase of AED 45.50 with card at CARREFOUR, DUBAI.')).toBe('CARREFOUR');
   });
 });
