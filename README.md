@@ -1,56 +1,65 @@
-# Welcome to your Expo app 👋
+# Zeropense
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+[![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-D97757?logo=claude&logoColor=white)](https://claude.com/claude-code)
+![Expo SDK 57](https://img.shields.io/badge/Expo-SDK%2057-000020?logo=expo&logoColor=white)
+![Android](https://img.shields.io/badge/Android-only-3DDC84?logo=android&logoColor=white)
 
-## Get started
+A personal expense tracker that reads your bank SMS and turns them into transactions — on the phone,
+with no account, no cloud and no ads. Built for AED and INR.
 
-1. Install dependencies
+## Download
 
-   ```bash
-   npm install
-   ```
+**[Download the latest APK](https://github.com/najeem99/Zeropense/raw/main/apk/Zeropense.apk)** (Android, ~37 MB)
 
-2. Start the app
+Open the file on your phone and allow "Install unknown apps" for your browser or file manager when asked.
+Installing over an older version keeps your data.
 
-   ```bash
-   npx expo start
-   ```
+## Features
 
-In the output, you'll find options to open the app in a
+- **Reads bank SMS** — a guided setup picks the period (1, 3, 6 or 12 months), your bank senders and
+  the message kinds that are real transactions. OTPs and promotions are left out.
+- **Only what you configured** — new SMS of a known kind land in **Review** to approve (or *Approve all*).
+- **Cards by last 4 digits** — every card number in your SMS is matched to a credit or debit card you name.
+- **Categories that learn** — pick a category once and the next payment at that shop gets it too.
+  Salary, refunds, money received and remittances (e.g. Aspora) are sorted automatically.
+- **Refunds** lower your spending instead of counting as income.
+- **Duplicate detection** — the same payment sent twice (SMS + email alert, two banks) is flagged.
+- **Overview** — money in, money out and net per currency, a spending-by-category donut and a spent-per-day chart.
+  AED and INR are never added together.
+- **SMS configuration** — paste any message and tap which amount, card and merchant to take.
+- **Start over** — delete all data and run the setup again like a new install.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Your data stays in a SQLite database on the device. SMS are read on the phone and never uploaded.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Build it yourself
 
-## Get a fresh project
-
-When you're ready, run:
+Needs Node 22.13+, JDK 17 and the Android SDK (Android Studio is not required).
 
 ```bash
-npm run reset-project
+npm install
+npx expo prebuild --platform android   # generates the android/ folder
+cd android
+./gradlew assembleRelease              # → android/app/build/outputs/apk/release/app-release.apk
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+For development on a phone with USB debugging: `npx expo run:android`.
+Expo Go can't read SMS, so the inbox features need a development or release build.
 
-### Other setup steps
+To publish a new APK here, copy `android/app/build/outputs/apk/release/app-release.apk` to `apk/Zeropense.apk` and push.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Checks
 
-## Learn more
+```bash
+npm test          # Jest: parsers, dedupe, summaries, and the SQL on node:sqlite
+npx expo lint
+npx tsc --noEmit
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## How it's built
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Expo SDK 57, React Native, Expo Router, TypeScript, React Compiler
+- `expo-sqlite` with versioned migrations (`src/db/migrations.ts`)
+- A local Kotlin Expo module (`modules/sms-reader`) that reads the Android SMS inbox
+- Pure logic (parsing, dedupe, categorising, summaries) kept apart from the SQLite repositories, with Jest tests
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+See [CLAUDE.md](CLAUDE.md) for the architecture and the SMS pipeline.
