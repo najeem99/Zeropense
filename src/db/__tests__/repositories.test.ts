@@ -27,6 +27,7 @@ import {
 } from '@/features/transactions/repository';
 
 import { migrate } from '../migrations';
+import { resetAllData } from '../reset';
 
 jest.mock('expo-sqlite', () => ({ useSQLiteContext: jest.fn() }));
 
@@ -187,6 +188,20 @@ async function configureEnbd(db: SQLiteDatabase, extra: Omit<SmsRule, 'id'>[] = 
 
     const r = await importSms(db, enbd('3.00', '1234', 300));
     expect(r.kind === 'draft' && r.draft.accountId).toBeTruthy();
+  });
+
+  it('resets to a fresh database', async () => {
+    await createAccount(db, { name: 'ENBD', kind: 'credit_card', currency: 'AED', smsHint: '1234' });
+    await saveTransaction(db, null, {
+      amountMinor: 500, currency: 'AED', direction: 'debit', merchant: 'Carrefour', note: null,
+      occurredAt: 0, accountId: null, categoryId: 'groceries',
+    });
+    await resetAllData(db);
+    expect(await listAccounts(db)).toEqual([]);
+    expect(await listSummaryInputs(db, 0, Number.MAX_SAFE_INTEGER)).toEqual([]);
+    expect(await listRules(db)).toEqual([{ merchantKey: 'ASPORA', categoryId: 'remittance' }]);
+    const cats = await db.getFirstAsync<{ n: number }>('SELECT COUNT(*) AS n FROM categories');
+    expect(cats?.n).toBeGreaterThan(10);
   });
 
   it('learns categories on accept and applies them to the next SMS', async () => {

@@ -1,6 +1,10 @@
 import { router, type Href } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
+import { Alert } from 'react-native';
 
-import { Body, Card, Row, Screen } from '@/components/ui';
+import { Body, Button, Card, Row, Screen } from '@/components/ui';
+import { resetAllData } from '@/db/reset';
+import { waitForScan } from '@/features/sms/inbox';
 import { ScanCard } from '@/features/sms/scan-card';
 
 const LINKS: { title: string; subtitle: string; href: Href }[] = [
@@ -11,6 +15,26 @@ const LINKS: { title: string; subtitle: string; href: Href }[] = [
 ];
 
 export default function More() {
+  const db = useSQLiteContext();
+
+  const confirmReset = () =>
+    Alert.alert(
+      'Delete all data and start over?',
+      'All transactions, cards, categories, SMS setup and learned merchants are deleted, like a new install. Your SMS stay on the phone, so you can import them again. This can’t be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete everything',
+          style: 'destructive',
+          onPress: async () => {
+            await waitForScan();
+            await resetAllData(db);
+            router.push('/sms-setup');
+          },
+        },
+      ],
+    );
+
   return (
     <Screen title="More">
       <ScanCard />
@@ -19,6 +43,7 @@ export default function More() {
           <Row key={l.title} title={l.title} subtitle={l.subtitle} right={<Body muted>›</Body>} onPress={() => router.push(l.href)} />
         ))}
       </Card>
+      <Button title="Delete all data and start over" variant="danger" onPress={confirmReset} />
       <Body muted style={{ fontSize: 13, textAlign: 'center' }}>
         Your data stays on this device. SMS are read on the phone and never uploaded.
       </Body>
