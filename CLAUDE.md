@@ -32,13 +32,16 @@ Feature code stays inside its feature folder; only promote to `components/` or `
   (`sms/extract.ts`, `sms/custom-parser.ts`, `sms/ingest.ts`, `transactions/dedupe.ts`,
   `categories/categorizer.ts`, `dashboard/summary.ts`) with Jest tests in `__tests__/`.
   `repository.ts` files are the only code that touches SQLite.
-- **SMS pipeline**: `scanInbox` (sms/inbox.ts, pages of 500 from the native reader, resumes from
-  `lastSmsScanAt`) or `importSms` → `importBatch` → `processSms` (skip personal numbers/OTP/promos →
-  custom parsers → bank profile by sender → generic) → match card by last 4 digits (unknown digits stay
-  unlinked and show up as "detected cards") → suggest category → flag duplicates → insert as `pending`.
-  Financial-looking SMS nothing could read go to `unread_sms` for SMS configuration. Nothing reaches
-  totals until accepted in Review — except the one-time history import (`importHistory`, offered on first
-  launch, setting `smsHistoryImport`), which inserts as `accepted` and only sends possible duplicates to Review.
+- **Only configured SMS are imported.** SMS setup (`app/sms-setup.tsx`, steps in `sms/setup/`) asks for a
+  period, the bank senders (`listSenders` counts them natively), then groups their messages into kinds by
+  `templateKey` (sms/templates.ts) and the user ticks the transaction kinds, picks the amount by position
+  and assigns each card number to a card. Every kind becomes an `sms_rules` row (`import` or `ignore`).
+  Running setup deletes earlier SMS transactions (`clearSmsTransactions`) and imports as `accepted`.
+- **SMS pipeline**: `scanInbox` (new SMS since `lastSmsScanAt`; does nothing before setup) or `importSms`
+  → `importBatch` (chunks of 200, yields to the UI, prepared inserts, `DedupeIndex`) → `processSms`
+  (SMS rules → custom parsers → otherwise ignored) → match card by last 4 digits → suggest category →
+  flag duplicates → insert as `pending` for Review. Unknown kinds with amounts from configured senders go
+  to `unread_sms`. The generic/bank parsers are only used to suggest kinds during setup.
 - **SMS configuration** (`app/parsers/new.tsx`): the user picks the transaction amount from
   `findAmountCandidates`, the card from `findDigitsCandidates`, optionally merchant/date; that becomes a
   custom parser (`buildPattern`), and `recheckUnread` re-runs the unread messages.

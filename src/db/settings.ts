@@ -2,9 +2,8 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 
 /**
  * lastSmsScanAt: receive time of the newest imported SMS. lastSmsScanRunAt: when a scan last finished.
- * smsHistoryImport: 'running' | 'done' | 'declined' — the one-time import of old SMS offered on first launch.
  */
-export type SettingKey = 'lastSmsScanAt' | 'lastSmsScanRunAt' | 'smsHistoryImport';
+export type SettingKey = 'lastSmsScanAt' | 'lastSmsScanRunAt';
 
 export async function getSetting(db: SQLiteDatabase, key: SettingKey): Promise<string | null> {
   const row = await db.getFirstAsync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key);

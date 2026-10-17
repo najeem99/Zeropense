@@ -100,3 +100,13 @@ export async function listDetectedCards(db: SQLiteDatabase): Promise<DetectedCar
      ORDER BY count DESC`,
   );
 }
+
+/** Links an existing account to the card digits found in SMS (and its earlier transactions). Caller notifies. */
+export async function setAccountHint(db: SQLiteDatabase, id: string, hint: string): Promise<void> {
+  await db.runAsync('UPDATE accounts SET sms_hint = ? WHERE id = ?', hint.slice(-4), id);
+  await db.runAsync(
+    'UPDATE transactions SET account_id = ? WHERE account_id IS NULL AND substr(account_hint, -4) = ?',
+    id,
+    hint.slice(-4),
+  );
+}

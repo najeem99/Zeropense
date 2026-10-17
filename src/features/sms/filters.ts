@@ -7,7 +7,7 @@ const RULES: { reason: string; test: RegExp }[] = [
 ];
 
 /** Banks send from alphanumeric IDs or short codes; long phone numbers are people. */
-const PERSONAL_SENDER = /^\+?\d{8,}$/;
+export const PERSONAL_SENDER = /^\+?\d{8,}$/;
 
 /** Returns why an SMS should be skipped, or null if it may be a real transaction. */
 export function skipReason(body: string, sender = ''): string | null {

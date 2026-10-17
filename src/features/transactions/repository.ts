@@ -82,42 +82,35 @@ export async function listForDedupe(db: SQLiteDatabase, from: number, to: number
   );
 }
 
+export type DraftRow = TransactionDraft & { id: string; status: 'pending' | 'accepted' };
+
 /**
- * Adds an SMS draft to the review queue (or straight to totals with status 'accepted').
- * Returns the new id, or null when this exact SMS was already imported (including ones
- * the user rejected). Caller notifies.
+ * Inserts SMS drafts with one prepared statement. Rows whose SMS was already imported
+ * (including rejected ones) are skipped. Returns the ids actually inserted. Run inside a
+ * transaction; caller notifies.
  */
-export async function insertDraft(
-  db: SQLiteDatabase,
-  d: TransactionDraft,
-  status: 'pending' | 'accepted' = 'pending',
-): Promise<string | null> {
+export async function insertDrafts(db: SQLiteDatabase, drafts: DraftRow[]): Promise<Set<string>> {
+  const inserted = new Set<string>();
+  if (drafts.length === 0) return inserted;
   const now = Date.now();
-  const id = newId();
-  const res = await db.runAsync(
+  const stmt = await db.prepareAsync(
     `INSERT OR IGNORE INTO transactions
       (id, status, source, amount_minor, currency, direction, merchant, occurred_at, account_id, account_hint,
        category_id, duplicate_of_id, sms_hash, sms_sender, sms_body, parser_id, created_at, updated_at)
      VALUES (?, ?, 'sms', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    id,
-    status,
-    d.amountMinor,
-    d.currency,
-    d.direction,
-    d.merchant,
-    d.occurredAt,
-    d.accountId,
-    d.accountHint,
-    d.categoryId,
-    d.duplicateOfId,
-    d.smsHash,
-    d.smsSender,
-    d.smsBody,
-    d.parserId,
-    now,
-    now,
   );
-  return res.changes > 0 ? id : null;
+  try {
+    for (const d of drafts) {
+      const res = await stmt.executeAsync(
+        d.id, d.status, d.amountMinor, d.currency, d.direction, d.merchant, d.occurredAt, d.accountId,
+        d.accountHint, d.categoryId, d.duplicateOfId, d.smsHash, d.smsSender, d.smsBody, d.parserId, now, now,
+      );
+      if (res.changes > 0) inserted.add(d.id);
+    }
+  } finally {
+    await stmt.finalizeAsync();
+  }
+  return inserted;
 }
 
 export type TransactionInput = {
@@ -161,18 +154,47 @@ export async function saveTransaction(db: SQLiteDatabase, id: string | null, inp
   return txId;
 }
 
+const CHUNK = 500;
+
+/** Learns merchant → category from the given transactions (only rows that have both). */
+async function learnFrom(db: SQLiteDatabase, where: string, params: (string | number)[]): Promise<void> {
+  const pairs = await db.getAllAsync<{ merchant: string; categoryId: string }>(
+    `SELECT DISTINCT merchant, category_id AS categoryId FROM transactions
+     WHERE ${where} AND merchant IS NOT NULL AND category_id IS NOT NULL`,
+    ...params,
+  );
+  for (const p of pairs) await learnRule(db, p.merchant, p.categoryId);
+}
+
 export async function setStatus(db: SQLiteDatabase, ids: string[], status: TransactionStatus): Promise<void> {
   if (ids.length === 0) return;
   await db.withTransactionAsync(async () => {
-    for (const id of ids) {
-      await db.runAsync('UPDATE transactions SET status = ?, updated_at = ? WHERE id = ?', status, Date.now(), id);
-      if (status === 'accepted') {
-        const tx = await getTransaction(db, id);
-        if (tx) await learnRule(db, tx.merchant, tx.categoryId);
-      }
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const chunk = ids.slice(i, i + CHUNK);
+      const marks = chunk.map(() => '?').join(',');
+      await db.runAsync(
+        `UPDATE transactions SET status = ?, updated_at = ? WHERE id IN (${marks})`,
+        status,
+        Date.now(),
+        ...chunk,
+      );
+      if (status === 'accepted') await learnFrom(db, `id IN (${marks})`, chunk);
     }
   });
   notifyDbChanged();
+}
+
+/** Accepts the whole Review queue in one statement. Returns how many were approved. */
+export async function approveAllPending(db: SQLiteDatabase, includeDuplicates: boolean): Promise<number> {
+  const where = includeDuplicates ? `status = 'pending'` : `status = 'pending' AND duplicate_of_id IS NULL`;
+  let changed = 0;
+  await db.withTransactionAsync(async () => {
+    await learnFrom(db, where, []);
+    const res = await db.runAsync(`UPDATE transactions SET status = 'accepted', updated_at = ? WHERE ${where}`, Date.now());
+    changed = res.changes;
+  });
+  notifyDbChanged();
+  return changed;
 }
 
 /** Manual entries are deleted; SMS entries become rejected so the SMS isn't re-imported. */

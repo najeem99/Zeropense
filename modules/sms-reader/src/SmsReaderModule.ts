@@ -1,10 +1,11 @@
 import { NativeModule, requireOptionalNativeModule } from 'expo';
 
-import type { InboxMessage } from './SmsReader.types';
+import type { InboxMessage, InboxSender } from './SmsReader.types';
 
 declare class SmsReaderModule extends NativeModule<{}> {
   hasPermission(): boolean;
-  readInbox(afterMs: number, limit: number): Promise<InboxMessage[]>;
+  listSenders(sinceMs: number): Promise<InboxSender[]>;
+  readInbox(afterMs: number, limit: number, senders: string[] | null): Promise<InboxMessage[]>;
 }
 
 /** null in Expo Go and on iOS/web, where the native module isn't compiled in. */

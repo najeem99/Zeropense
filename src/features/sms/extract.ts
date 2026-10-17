@@ -80,7 +80,7 @@ export function cleanMerchant(raw: string): string | null {
   return s;
 }
 
-function findMerchant(body: string, direction: Direction, hints: ExtractHints): string | null {
+export function findMerchant(body: string, direction: Direction, hints: ExtractHints = {}): string | null {
   const patterns = [...(hints.merchant ?? []), ...(direction === 'debit' ? DEBIT_MERCHANT : CREDIT_MERCHANT)];
   for (const re of patterns) {
     const hit = body.match(re);
@@ -90,7 +90,7 @@ function findMerchant(body: string, direction: Direction, hints: ExtractHints): 
   return null;
 }
 
-function findAccount(body: string): string | null {
+export function findAccount(body: string): string | null {
   for (const re of ACCOUNT_RE) {
     const hit = body.match(re);
     if (hit) return hit[1].slice(-4);
@@ -98,7 +98,7 @@ function findAccount(body: string): string | null {
   return null;
 }
 
-function findDate(body: string): number | null {
+export function findDate(body: string): number | null {
   const hit = body.match(DATE_RE);
   return hit ? parseSmsDate(hit[1]) : null;
 }

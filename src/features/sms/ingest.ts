@@ -1,25 +1,27 @@
 import { suggestCategory, type MerchantRule } from '@/features/categories/categorizer';
-import { findDuplicate, type DedupeCandidate } from '@/features/transactions/dedupe';
+import type { DedupeIndex } from '@/features/transactions/dedupe';
 import { hashString } from '@/lib/id';
 import type { Currency, Direction } from '@/lib/money';
 
 import { findAmountCandidates } from './candidates';
-import type { CustomParser } from './custom-parser';
+import { applyCustomParser, type CustomParser } from './custom-parser';
 import { skipReason } from './filters';
-import { parseSms } from './parse';
-import type { RawSms } from './types';
+import { applyRule, ruleFor, senderKey, type SmsRule } from './templates';
+import type { ParsedSms, RawSms } from './types';
 
 export type AccountRef = { id: string; currency: Currency; smsHint: string | null };
 
 export type IngestContext = {
+  /** Message kinds configured in SMS setup. Only these and custom parsers are imported. */
+  smsRules: SmsRule[];
   customParsers: CustomParser[];
   accounts: AccountRef[];
-  /** Transactions near this SMS's time, for duplicate detection. */
-  recent: DedupeCandidate[];
+  /** Existing transactions, for duplicate detection. New drafts are added to it. */
+  dedupe: DedupeIndex;
   rules: MerchantRule[];
 };
 
-/** A transaction ready to be saved as "pending" in the review queue. */
+/** A transaction ready to be saved (pending in Review, or accepted by SMS setup). */
 export type TransactionDraft = {
   amountMinor: number;
   currency: Currency;
@@ -38,9 +40,10 @@ export type TransactionDraft = {
 };
 
 export type IngestResult =
-  | { kind: 'skipped'; reason: string }
-  /** `looksFinancial`: has an amount, so worth showing in SMS configuration. */
-  | { kind: 'unparsed'; looksFinancial: boolean }
+  /** Not a configured kind of message. Nothing is stored. */
+  | { kind: 'ignored'; reason: string }
+  /** From a configured bank sender and has an amount, but no configured kind matched: worth setting up. */
+  | { kind: 'unparsed' }
   | { kind: 'draft'; draft: TransactionDraft };
 
 function isSameDay(a: number, b: number): boolean {
@@ -64,23 +67,56 @@ export function matchAccount(hint: string | null, currency: Currency, accounts: 
   return sameCurrency.length === 1 ? sameCurrency[0].id : null;
 }
 
-/** Pure decision step: turns one SMS into a review-queue draft, or says why not. */
-export function processSms(sms: RawSms, ctx: IngestContext): IngestResult {
-  const reason = skipReason(sms.body, sms.sender);
-  if (reason) return { kind: 'skipped', reason };
+function isConfiguredSender(sms: RawSms, ctx: IngestContext): boolean {
+  const key = senderKey(sms.sender);
+  const lower = sms.sender.toLowerCase();
+  return (
+    ctx.smsRules.some((r) => r.senderKey === key) ||
+    ctx.customParsers.some((p) => p.senderContains && lower.includes(p.senderContains.toLowerCase()))
+  );
+}
 
-  const parsed = parseSms(sms, ctx.customParsers);
-  if (!parsed) return { kind: 'unparsed', looksFinancial: findAmountCandidates(sms.body).length > 0 };
+/**
+ * Pure decision step. Only message kinds the user configured (SMS setup rules, then custom
+ * parsers) become transactions; everything else is ignored.
+ */
+export function processSms(sms: RawSms, ctx: IngestContext): IngestResult {
+  let parsed: ParsedSms | null = null;
+  let fixedAccountId: string | null = null;
+
+  const rule = ruleFor(sms, ctx.smsRules);
+  if (rule) {
+    if (rule.action === 'ignore') return { kind: 'ignored', reason: 'You chose to ignore this kind of message' };
+    parsed = applyRule(rule, sms);
+    fixedAccountId = rule.fixedAccountId;
+  }
+  if (!parsed) {
+    for (const p of ctx.customParsers) {
+      parsed = applyCustomParser(p, sms);
+      if (parsed) break;
+    }
+  }
+  if (!parsed) {
+    const configured = isConfiguredSender(sms, ctx);
+    if (configured && !skipReason(sms.body) && findAmountCandidates(sms.body).length > 0) return { kind: 'unparsed' };
+    return { kind: 'ignored', reason: configured ? 'Not a transaction' : 'Not a configured bank SMS' };
+  }
 
   // SMS dates rarely carry a time; the receive time is more precise on the same day,
   // and duplicate detection depends on it.
   const occurredAt =
     parsed.occurredAt && !isSameDay(parsed.occurredAt, sms.receivedAt) ? parsed.occurredAt : sms.receivedAt;
-  const accountId = matchAccount(parsed.accountHint, parsed.currency, ctx.accounts);
-  const duplicateOfId = findDuplicate(
-    { amountMinor: parsed.amountMinor, currency: parsed.currency, direction: parsed.direction, occurredAt, accountId },
-    ctx.recent,
-  );
+  // Card digits in the SMS win; kinds that never name a card use the account chosen in setup.
+  const byDigits = parsed.accountHint ? matchAccount(parsed.accountHint, parsed.currency, ctx.accounts) : null;
+  const accountId =
+    byDigits ?? fixedAccountId ?? (parsed.accountHint ? null : matchAccount(null, parsed.currency, ctx.accounts));
+  const duplicateOfId = ctx.dedupe.find({
+    amountMinor: parsed.amountMinor,
+    currency: parsed.currency,
+    direction: parsed.direction,
+    occurredAt,
+    accountId,
+  });
 
   return {
     kind: 'draft',

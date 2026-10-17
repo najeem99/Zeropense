@@ -88,7 +88,23 @@ CREATE TABLE settings (
 );
 `;
 
-const LATEST = 2;
+const V3 = `
+CREATE TABLE sms_rules (                       -- message kinds configured in SMS setup
+  id TEXT PRIMARY KEY NOT NULL,
+  sender_key TEXT NOT NULL,                    -- sender without operator prefix/suffix, e.g. HDFCBK
+  template_key TEXT NOT NULL,                  -- opening words with numbers masked
+  action TEXT NOT NULL,                        -- import | ignore
+  amount_index INTEGER NOT NULL,
+  direction TEXT NOT NULL,
+  currency TEXT NOT NULL,
+  fixed_account_id TEXT REFERENCES accounts(id) ON DELETE SET NULL,
+  sample TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE (sender_key, template_key)
+);
+`;
+
+const LATEST = 3;
 
 /** Runs on every app start via SQLiteProvider onInit. */
 export async function migrate(db: SQLiteDatabase): Promise<void> {
@@ -107,6 +123,9 @@ export async function migrate(db: SQLiteDatabase): Promise<void> {
     }
     if (version < 2) {
       await db.execAsync(V2);
+    }
+    if (version < 3) {
+      await db.execAsync(V3);
     }
   });
   await db.execAsync(`PRAGMA user_version = ${LATEST}`);

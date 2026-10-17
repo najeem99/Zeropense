@@ -32,3 +32,30 @@ export function findDuplicate(
   }
   return best?.id ?? null;
 }
+
+/**
+ * Candidates bucketed by amount, currency and direction, so checking one SMS against
+ * thousands of transactions doesn't scan them all. Add to it as new drafts are created.
+ */
+export class DedupeIndex {
+  private buckets = new Map<string, DedupeCandidate[]>();
+
+  constructor(items: DedupeCandidate[] = []) {
+    items.forEach((i) => this.add(i));
+  }
+
+  private static key(c: Pick<DedupeCandidate, 'amountMinor' | 'currency' | 'direction'>): string {
+    return `${c.amountMinor}|${c.currency}|${c.direction}`;
+  }
+
+  add(item: DedupeCandidate): void {
+    const k = DedupeIndex.key(item);
+    const bucket = this.buckets.get(k);
+    if (bucket) bucket.push(item);
+    else this.buckets.set(k, [item]);
+  }
+
+  find(candidate: Omit<DedupeCandidate, 'id'>, windowMs = DUPLICATE_WINDOW_MS): string | null {
+    return findDuplicate(candidate, this.buckets.get(DedupeIndex.key(candidate)) ?? [], windowMs);
+  }
+}

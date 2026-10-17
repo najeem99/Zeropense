@@ -12,7 +12,8 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="transaction/[id]" options={{ title: 'Transaction', presentation: 'modal' }} />
-          <Stack.Screen name="import-sms" options={{ title: 'Import SMS' }} />
+          <Stack.Screen name="import-sms" options={{ title: 'Paste an SMS' }} />
+          <Stack.Screen name="sms-setup" options={{ title: 'Set up bank SMS' }} />
           <Stack.Screen name="accounts/index" options={{ title: 'Cards & accounts' }} />
           <Stack.Screen name="accounts/new" options={{ title: 'Add card or account' }} />
           <Stack.Screen name="categories" options={{ title: 'Categories' }} />

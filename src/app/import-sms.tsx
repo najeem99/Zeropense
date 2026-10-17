@@ -73,10 +73,15 @@ export default function ImportSms() {
               ) : null}
               <Button title="Go to review" variant="secondary" onPress={() => router.navigate('/review')} />
             </>
-          ) : result.kind === 'skipped' ? (
+          ) : result.kind === 'ignored' ? (
             <>
-              <Label>Skipped</Label>
-              <Body>{result.reason}. Nothing was added.</Body>
+              <Label>Ignored</Label>
+              <Body>{result.reason}. Only the kinds of bank SMS you set up are imported.</Body>
+              <Button
+                title="Set up this SMS format"
+                variant="secondary"
+                onPress={() => router.push({ pathname: '/parsers/new', params: { sample: body, sender } })}
+              />
             </>
           ) : result.kind === 'already-imported' ? (
             <>
@@ -86,7 +91,7 @@ export default function ImportSms() {
           ) : (
             <>
               <Label>Couldn&apos;t read this SMS</Label>
-              <Body>No amount or debit/credit wording was found. You can teach the app this format.</Body>
+              <Body>It&apos;s from one of your banks but doesn&apos;t match a kind you set up. You can teach the app this format.</Body>
               <Button
                 title="Set up this SMS format"
                 variant="secondary"

@@ -1,12 +1,14 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { PermissionsAndroid, Platform } from 'react-native';
 
-import SmsReader from '../../../modules/sms-reader';
+import SmsReader, { type InboxSender } from '../../../modules/sms-reader';
 
 import { notifyDbChanged } from '@/db/live';
 import { getSetting, setSetting } from '@/db/settings';
 
-import { importBatch, type ImportSummary } from './repository';
+import { addSummary, emptySummary, importBatch, listCustomParsers, type ImportSummary } from './repository';
+import { listSmsRules } from './rules-repository';
+import type { RawSms } from './types';
 
 const PAGE_SIZE = 500;
 
@@ -35,38 +37,49 @@ export async function getLastScanRunAt(db: SQLiteDatabase): Promise<number | nul
   return v ? Number(v) : null;
 }
 
-let running: Promise<ImportSummary> | null = null;
-
-export type HistoryImportState = 'running' | 'done' | 'declined' | null;
-
-/** null = the user hasn't been asked yet whether to import their old SMS. */
-export async function getHistoryImportState(db: SQLiteDatabase): Promise<HistoryImportState> {
-  return (await getSetting(db, 'smsHistoryImport')) as HistoryImportState;
+/** True once SMS setup (or a custom format) has configured something to import. */
+export async function isSmsConfigured(db: SQLiteDatabase): Promise<boolean> {
+  const [rules, parsers] = await Promise.all([listSmsRules(db), listCustomParsers(db)]);
+  return rules.length > 0 || parsers.length > 0;
 }
 
-export async function declineHistoryImport(db: SQLiteDatabase): Promise<void> {
-  await setSetting(db, 'smsHistoryImport', 'declined');
+/** Senders with message counts since `sinceMs`, counted on the native side. */
+export async function listInboxSenders(sinceMs: number): Promise<InboxSender[]> {
+  if (!hasInboxPermission()) throw new Error('SMS permission not granted');
+  return SmsReader!.listSenders(sinceMs);
+}
+
+/** Reads messages from the given addresses since `sinceMs`, oldest first, page by page. */
+export async function readMessages(
+  addresses: string[] | null,
+  sinceMs: number,
+  onProgress?: (read: number) => void,
+): Promise<RawSms[]> {
+  if (!hasInboxPermission()) throw new Error('SMS permission not granted');
+  const out: RawSms[] = [];
+  let after = sinceMs;
+  for (;;) {
+    const page = await SmsReader!.readInbox(after, PAGE_SIZE, addresses);
+    for (const m of page) out.push({ sender: m.sender, body: m.body, receivedAt: m.date });
+    onProgress?.(out.length);
+    if (page.length < PAGE_SIZE) break;
+    after = page[page.length - 1].date;
+  }
+  return out;
+}
+
+/** After SMS setup, ongoing scans start from here instead of re-reading the inbox. */
+export async function markScannedUpTo(db: SQLiteDatabase, ts: number): Promise<void> {
+  await setSetting(db, 'lastSmsScanAt', String(ts));
+  await setSetting(db, 'lastSmsScanRunAt', String(Date.now()));
   notifyDbChanged();
 }
 
-/**
- * Imports the whole inbox from the beginning, straight into totals (possible duplicates
- * still go to Review). Picks up where it left off if the app was closed mid-import.
- */
-export async function importHistory(db: SQLiteDatabase, onProgress?: (s: ImportSummary) => void): Promise<ImportSummary> {
-  // A normal scan already in flight would otherwise be shared and run without auto-accept.
-  if (running) await running.catch(() => {});
-  if ((await getHistoryImportState(db)) !== 'running') {
-    await setSetting(db, 'smsHistoryImport', 'running');
-    await setSetting(db, 'lastSmsScanAt', '0');
-    notifyDbChanged();
-  }
-  return scanInbox(db, onProgress);
-}
+let running: Promise<ImportSummary> | null = null;
 
 /**
- * Imports every inbox SMS received after the last scan (the whole inbox the first time).
- * While a history import is running, transactions are accepted directly. Concurrent calls share one run.
+ * Imports SMS received since the last scan. Only configured kinds become transactions, and
+ * they wait in Review. Does nothing until SMS setup has run. Concurrent calls share one run.
  */
 export function scanInbox(db: SQLiteDatabase, onProgress?: (s: ImportSummary) => void): Promise<ImportSummary> {
   if (!running) {
@@ -78,33 +91,31 @@ export function scanInbox(db: SQLiteDatabase, onProgress?: (s: ImportSummary) =>
 }
 
 async function doScan(db: SQLiteDatabase, onProgress?: (s: ImportSummary) => void): Promise<ImportSummary> {
-  if (!hasInboxPermission()) throw new Error('SMS permission not granted');
-  const autoAccept = (await getHistoryImportState(db)) === 'running';
-  const total: ImportSummary = { read: 0, added: 0, accepted: 0, duplicates: 0, skipped: 0, unread: 0 };
-  let after = Number((await getSetting(db, 'lastSmsScanAt')) ?? 0);
+  const total = emptySummary();
+  if (!hasInboxPermission() || !(await isSmsConfigured(db))) return total;
+  const lastAt = await getSetting(db, 'lastSmsScanAt');
+  // Never fall back to the whole inbox: without a setup timestamp, only look at today onwards.
+  let after = lastAt ? Number(lastAt) : Date.now() - 24 * 60 * 60 * 1000;
 
   for (;;) {
-    const page = await SmsReader!.readInbox(after, PAGE_SIZE);
+    const page = await SmsReader!.readInbox(after, PAGE_SIZE, null);
     if (page.length === 0) break;
     const s = await importBatch(
       db,
       page.map((m) => ({ sender: m.sender, body: m.body, receivedAt: m.date })),
-      { autoAccept },
     );
-    total.read += s.read;
-    total.added += s.added;
-    total.accepted += s.accepted;
-    total.duplicates += s.duplicates;
-    total.skipped += s.skipped;
-    total.unread += s.unread;
+    addSummary(total, s);
     after = page[page.length - 1].date;
-    // Saved per page so an interrupted first scan resumes instead of restarting.
     await setSetting(db, 'lastSmsScanAt', String(after));
     onProgress?.({ ...total });
     if (page.length < PAGE_SIZE) break;
   }
-  if (autoAccept) await setSetting(db, 'smsHistoryImport', 'done');
   await setSetting(db, 'lastSmsScanRunAt', String(Date.now()));
   notifyDbChanged();
   return total;
+}
+
+/** For the setup: waits for any scan in progress so it doesn't race the fresh import. */
+export async function waitForScan(): Promise<void> {
+  if (running) await running.catch(() => {});
 }

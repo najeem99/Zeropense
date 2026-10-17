@@ -1,33 +1,17 @@
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useRef, useState } from 'react';
-import { Alert, AppState } from 'react-native';
+import { useEffect, useState } from 'react';
+import { AppState } from 'react-native';
 
 import { Body, Button, Card, Label } from '@/components/ui';
 import { useDbQuery } from '@/db/live';
 import { formatDateTime } from '@/lib/dates';
 
-import {
-  declineHistoryImport,
-  getHistoryImportState,
-  getLastScanRunAt,
-  hasInboxPermission,
-  importHistory,
-  inboxAvailable,
-  requestInboxPermission,
-  scanInbox,
-} from './inbox';
+import { getLastScanRunAt, hasInboxPermission, inboxAvailable, isSmsConfigured, scanInbox } from './inbox';
 import type { ImportSummary } from './repository';
 
 function describe(s: ImportSummary): string {
-  const parts = [`Read ${s.read} SMS`];
-  if (s.accepted) {
-    parts.push(`${s.accepted} added to your totals`);
-    const toReview = s.added - s.accepted;
-    if (toReview) parts.push(`${toReview} to review`);
-  } else {
-    parts.push(`${s.added} new transaction${s.added === 1 ? '' : 's'}`);
-  }
+  const parts = [`Checked ${s.read} new SMS`, `${s.added} transaction${s.added === 1 ? '' : 's'} to review`];
   if (s.duplicates) parts.push(`${s.duplicates} possible duplicate${s.duplicates === 1 ? '' : 's'}`);
   if (s.unread) parts.push(`${s.unread} not understood`);
   return parts.join(' · ');
@@ -49,58 +33,10 @@ export function useAutoInboxScan() {
 export function ScanCard() {
   const db = useSQLiteContext();
   const lastRun = useDbQuery(getLastScanRunAt);
-  const history = useDbQuery(getHistoryImportState);
-  const [granted, setGranted] = useState(hasInboxPermission);
+  const configured = useDbQuery(isSmsConfigured);
   const [progress, setProgress] = useState<ImportSummary | null>(null);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const asked = useRef(false);
-
-  const run = async (job: typeof scanInbox) => {
-    setScanning(true);
-    setError(null);
-    try {
-      setProgress(await job(db, setProgress));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setScanning(false);
-    }
-  };
-  const scan = () => run(scanInbox);
-
-  /** Asks for SMS access if needed, then imports the whole inbox. */
-  const startHistoryImport = async () => {
-    if (!hasInboxPermission()) {
-      if (!(await requestInboxPermission())) return false;
-      setGranted(true);
-    }
-    await run(importHistory);
-    return true;
-  };
-
-  // First launch: ask once whether to read the SMS already on the phone.
-  useEffect(() => {
-    if (!inboxAvailable || history !== null || asked.current) return;
-    asked.current = true;
-    Alert.alert(
-      'Import your old bank SMS?',
-      'Zeropense can read the bank SMS already on this phone and add those transactions to your dashboard. ' +
-        'Messages are read on this phone only and never uploaded. Possible duplicates go to Review.',
-      [
-        { text: 'Not now', style: 'cancel', onPress: () => declineHistoryImport(db) },
-        {
-          text: 'Import',
-          onPress: async () => {
-            if (!(await startHistoryImport())) await declineHistoryImport(db);
-          },
-        },
-      ],
-      { cancelable: false },
-    );
-    // startHistoryImport only closes over db and state setters.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [db, history]);
 
   if (!inboxAvailable) {
     return (
@@ -114,40 +50,48 @@ export function ScanCard() {
       </Card>
     );
   }
+  if (configured === undefined) return null;
 
-  if (!granted) {
+  if (!configured) {
     return (
       <Card>
-        <Label>Read your bank SMS</Label>
+        <Label>Set up your bank SMS</Label>
         <Body muted style={{ fontSize: 14 }}>
-          Allow SMS access to add every transaction already in your inbox to your dashboard. Messages are read on this
-          phone only.
+          Pick how far back to read, which senders are your banks, which of their messages are transactions, and which
+          card each one is. Only those messages are imported. Everything stays on this phone.
         </Body>
-        <Button title="Allow and import old SMS" onPress={startHistoryImport} />
+        <Button title="Set up bank SMS" onPress={() => router.push('/sms-setup')} />
       </Card>
     );
   }
+
+  const scan = async () => {
+    setScanning(true);
+    setError(null);
+    try {
+      setProgress(await scanInbox(db, setProgress));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setScanning(false);
+    }
+  };
 
   return (
     <Card>
       <Label>Bank SMS</Label>
       <Body muted style={{ fontSize: 14 }}>
         {scanning
-          ? `${history === 'running' ? 'Importing your old SMS' : 'Scanning your inbox'}…${progress ? ` ${describe(progress)}` : ''}`
+          ? `Checking new SMS…${progress ? ` ${describe(progress)}` : ''}`
           : progress
             ? describe(progress)
             : lastRun
-              ? `Last scanned ${formatDateTime(lastRun)}. New SMS are picked up when you open the app.`
-              : 'Not scanned yet.'}
+              ? `Last checked ${formatDateTime(lastRun)}. New bank SMS of the kinds you set up go to Review.`
+              : 'New bank SMS of the kinds you set up go to Review.'}
       </Body>
-      {error ? <Body style={{ fontSize: 14 }}>Scan failed: {error}</Body> : null}
-      {history !== 'done' && !scanning ? (
-        <Button
-          title={history === 'running' ? 'Resume importing old SMS' : 'Import old SMS'}
-          onPress={() => run(importHistory)}
-        />
-      ) : null}
-      <Button title={scanning ? 'Scanning…' : 'Scan now'} variant="secondary" disabled={scanning} onPress={scan} />
+      {error ? <Body style={{ fontSize: 14 }}>Check failed: {error}</Body> : null}
+      <Button title={scanning ? 'Checking…' : 'Check now'} variant="secondary" disabled={scanning} onPress={scan} />
+      <Button title="Edit SMS setup" variant="ghost" onPress={() => router.push('/sms-setup')} />
     </Card>
   );
 }
