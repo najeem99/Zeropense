@@ -76,10 +76,10 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** adding/deleting categories and forgetting merchants works and the lists update live.
 
 ## F6. Cards & accounts
-- [ ] Repository: list (`kind, currency, name`), create (+ link past transactions by last 4, return count), rename (ignore empty), delete, detected cards query, `setAccountHint`. (§9)
-- [ ] `accountLabel` (`name ••1234`), kind labels.
-- [ ] **Cards & accounts screen**: Found in your SMS (empty until SMS exist), groups by kind, inline Rename, Delete + confirm, empty text, Add button. (§12.6)
-- [ ] **Add card or account screen**: kind chips with no default + error, name, last 4 digits (digits only, last 4), currency, prefill from args, "N earlier transactions linked" alert. (§12.7)
+- [x] Repository: list (`kind, currency, name`), create (+ link past transactions by last 4, return count), rename (ignore empty), delete, detected cards query, `setAccountHint`. (§9)
+- [x] `accountLabel` (`name ••1234`), kind labels.
+- [x] **Cards & accounts screen**: Found in your SMS (empty until SMS exist), groups by kind, inline Rename, Delete + confirm, empty text, Add button. (§12.6)
+- [x] **Add card or account screen**: kind chips with no default + error, name, last 4 digits (digits only, last 4), currency, prefill from args, "N earlier transactions linked" alert. (§12.7)
 - *Port tests:* `repositories.test.ts` › detects unknown cards and links past transactions (finish in F13 once SMS import exists).
 - **Done when:** cards can be added, renamed and deleted.
 
