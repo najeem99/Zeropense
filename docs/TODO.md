@@ -142,9 +142,9 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** pasting a message for a configured kind (created in a test DB) lands in Review; others show the right reason.
 
 ## F14. Review queue
-- [ ] **Review tab**: empty state, header + Approve all (N) with the two confirm variants, virtualized list. (§12.2)
-- [ ] Review card: icon, title, pill, amount, meta, unknown-card banner + Add card (prefilled args), duplicate warning, Show/Hide SMS, Reject / Edit / Accept. (§12.2)
-- [ ] Review tab badge = pending count; Overview pending banner. (§12, §12.1)
+- [x] **Review tab**: empty state, header + Approve all (N) with the two confirm variants, virtualized list. (§12.2)
+- [x] Review card: icon, title, pill, amount, meta, unknown-card banner + Add card (prefilled args), duplicate warning, Show/Hide SMS, Reject / Edit / Accept. (§12.2)
+- [x] Review tab badge = pending count; Overview pending banner. (§12, §12.1)
 - **Done when:** accept, reject, edit-then-accept and approve-all work, learning categories, and the badge updates live.
 
 ## F15. Native SMS inbox reader
