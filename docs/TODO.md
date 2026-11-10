@@ -148,9 +148,9 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** accept, reject, edit-then-accept and approve-all work, learning categories, and the badge updates live.
 
 ## F15. Native SMS inbox reader
-- [ ] `READ_SMS` in the manifest; runtime request with the rationale texts; denied handling. (§2.1)
-- [ ] `hasPermission`, `listSenders(sinceMs)` (aggregated natively, money regex), `readInbox(afterMs, limit, senders?)` ascending, paging helper `readMessages` (500 per page, progress). (§7.6)
-- [ ] Decide paging edge (Q7).
+- [x] `READ_SMS` in the manifest; runtime request with the rationale texts; denied handling. (§2.1)
+- [x] `hasPermission`, `listSenders(sinceMs)` (aggregated natively, money regex), `readInbox(afterMs, limit, senders?)` ascending, paging helper `readMessages` (500 per page, progress). (§7.6)
+- [x] Decide paging edge (Q7).
 - **Done when:** on a real phone, senders and messages for a period are listed correctly and nothing runs without permission.
 
 ## F16. SMS setup wizard
