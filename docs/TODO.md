@@ -122,7 +122,7 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** all ported tests pass, including the regex-escaping case.
 
 ## F11. Duplicate detection (pure)
-- [ ] `findDuplicate` (15 min, same amount/currency/direction, compatible accounts, closest wins) and `DedupeIndex` buckets. (§10.4)
+- [x] `findDuplicate` (15 min, same amount/currency/direction, compatible accounts, closest wins) and `DedupeIndex` buckets. (§10.4)
 - *Port tests:* `logic.test.ts` › findDuplicate.
 - **Done when:** tests pass.
 
