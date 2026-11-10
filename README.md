@@ -9,7 +9,8 @@ the [`backup/expo-react-native`](https://github.com/najeem99/Zeropense/tree/back
 
 ## Install
 
-Download [`apk/Zeropense.apk`](apk/Zeropense.apk) and open it on an Android phone (Android 7.0+). It uses the same
+Download the latest build from [Releases](https://github.com/najeem99/Zeropense/releases/latest/download/Zeropense.apk)
+(built by GitHub Actions on every push to `main`; [`apk/Zeropense.apk`](apk/Zeropense.apk) is a committed copy) and open it on an Android phone (Android 7.0+). It uses the same
 package name and signing key as the Expo build, so it installs over it and keeps your data.
 
 ## Stack
