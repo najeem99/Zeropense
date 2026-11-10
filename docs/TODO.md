@@ -160,9 +160,9 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** on a real phone, setup with real bank SMS imports the expected transactions into totals, duplicates into Review, and creates the cards.
 
 ## F17. Automatic inbox scan and ScanCard
-- [ ] `isSmsConfigured`, `getLastScanRunAt`, `scanInbox` (single shared run, from `lastSmsScanAt` or now − 24 h, pages of 500 from all senders, save marker per page, progress, `lastSmsScanRunAt`), `waitForScan`, `markScannedUpTo`. (§7.5)
-- [ ] Trigger on app start and on every return to foreground, only with permission; log errors. (§7.5)
-- [ ] **ScanCard** on Overview and More: not-configured variant → Set up bank SMS; configured variant with last-checked text, Check now with progress summary and error, Edit SMS setup. (§12.12)
+- [x] `isSmsConfigured`, `getLastScanRunAt`, `scanInbox` (single shared run, from `lastSmsScanAt` or now − 24 h, pages of 500 from all senders, save marker per page, progress, `lastSmsScanRunAt`), `waitForScan`, `markScannedUpTo`. (§7.5)
+- [x] Trigger on app start and on every return to foreground, only with permission; log errors. (§7.5)
+- [x] **ScanCard** on Overview and More: not-configured variant → Set up bank SMS; configured variant with last-checked text, Check now with progress summary and error, Edit SMS setup. (§12.12)
 - **Done when:** a new bank SMS appears in Review after reopening the app, without duplicates across repeated scans.
 
 ## F18. SMS configuration (custom formats)

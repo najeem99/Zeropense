@@ -1,15 +1,22 @@
 package com.najeemfasil.expense.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import com.najeemfasil.expense.data.LocalDb
+import com.najeemfasil.expense.data.LocalSmsInbox
 import com.najeemfasil.expense.data.rememberDbQuery
 import com.najeemfasil.expense.feature.accounts.AccountNewScreen
 import com.najeemfasil.expense.feature.accounts.AccountsScreen
 import com.najeemfasil.expense.feature.categories.CategoriesScreen
 import com.najeemfasil.expense.feature.dashboard.OverviewScreen
 import com.najeemfasil.expense.feature.review.ReviewScreen
+import com.najeemfasil.expense.feature.sms.AutoInboxScan
 import com.najeemfasil.expense.feature.sms.ImportSmsScreen
+import com.najeemfasil.expense.feature.sms.LocalSmsScanner
+import com.najeemfasil.expense.feature.sms.ScanCard
+import com.najeemfasil.expense.feature.sms.SmsScanner
 import com.najeemfasil.expense.feature.sms.SmsSetupScreen
 import com.najeemfasil.expense.feature.transactions.TransactionScreen
 import com.najeemfasil.expense.feature.transactions.TransactionsScreen
@@ -24,13 +31,14 @@ import com.najeemfasil.expense.ui.navigation.Routes
 
 /** The real screens. Destinations still to be built show a placeholder. */
 fun appDestinations() = Destinations(
-    overview = { OverviewScreen() },
+    overview = { OverviewScreen(scanCard = { ScanCard() }) },
     review = { ReviewScreen() },
     transactions = { TransactionsScreen() },
     more = {
         // Temporary links until the More tab is built (F19).
         val nav = LocalNavigator.current
         Screen(title = "More") {
+            ScanCard()
             Button("Set up bank SMS", { nav.push(Routes.SMS_SETUP) })
             Button("Paste an SMS", { nav.push(Routes.IMPORT_SMS) })
             Button("Cards & accounts", { nav.push(Routes.ACCOUNTS) })
@@ -39,7 +47,10 @@ fun appDestinations() = Destinations(
     },
     transaction = { id -> TransactionScreen(id) },
     importSms = { ImportSmsScreen() },
-    smsSetup = { SmsSetupScreen() },
+    smsSetup = {
+        val scanner = LocalSmsScanner.current
+        SmsSetupScreen(waitForScan = scanner::waitForScan)
+    },
     accounts = { AccountsScreen() },
     accountNew = { digits, currency, sender -> AccountNewScreen(digits, currency, sender) },
     categories = { CategoriesScreen() },
@@ -49,7 +60,13 @@ fun appDestinations() = Destinations(
 
 @Composable
 fun ZeropenseApp() {
+    val db = LocalDb.current
+    val inbox = LocalSmsInbox.current
+    val scanner = remember(db, inbox) { SmsScanner(db, inbox) }
     val destinations = remember { appDestinations() }
     val pending by rememberDbQuery { countPending(it) }
-    AppNav(destinations, pendingCount = pending ?: 0)
+    CompositionLocalProvider(LocalSmsScanner provides scanner) {
+        AutoInboxScan()
+        AppNav(destinations, pendingCount = pending ?: 0)
+    }
 }

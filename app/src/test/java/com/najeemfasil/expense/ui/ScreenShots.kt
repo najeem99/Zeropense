@@ -29,11 +29,12 @@ fun ComposeRule.setScreen(
     db: com.najeemfasil.expense.data.db.Db,
     dark: Boolean = false,
     inbox: com.najeemfasil.expense.feature.sms.SmsInbox = com.najeemfasil.expense.feature.sms.FakeSmsInbox(),
+    scanner: com.najeemfasil.expense.feature.sms.SmsScanner = com.najeemfasil.expense.feature.sms.SmsScanner(db, inbox),
     content: @Composable () -> Unit
 ) {
     setContent {
         ZeropenseTheme(dark = dark) {
-            androidx.compose.runtime.CompositionLocalProvider(com.najeemfasil.expense.data.LocalDb provides db, com.najeemfasil.expense.data.LocalSmsInbox provides inbox) {
+            androidx.compose.runtime.CompositionLocalProvider(com.najeemfasil.expense.data.LocalDb provides db, com.najeemfasil.expense.data.LocalSmsInbox provides inbox, com.najeemfasil.expense.feature.sms.LocalSmsScanner provides scanner) {
                 val d = com.najeemfasil.expense.ui.navigation.placeholderDestinations()
                 com.najeemfasil.expense.ui.navigation.AppNav(
                     com.najeemfasil.expense.ui.navigation.Destinations(
