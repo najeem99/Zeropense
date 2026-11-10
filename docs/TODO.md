@@ -50,9 +50,9 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** every route opens with the right title and back behaviour, in light and dark.
 
 ## F3. Core helpers (pure)
-- [ ] Money: `Currency` (AED, INR), `Direction`, `normalizeCurrency`, `parseAmountToMinor` (truncating), `formatMoney` (en-AE / en-IN grouping, `−` and `+`, INR `₹` no space, `AED ` with space), `minorToInput`. (§5.1)
-- [ ] Dates: `parseSmsDate` (3 formats, day first, no roll-over), `startOfMonth`, `addMonths`, `startOfDay`, `dayAt`, and the display formats. (§5.2)
-- [ ] Ids: `newId()`; `hashString` = FNV-1a 32-bit over UTF-16 chars, 8-char hex; must match JS output bit for bit. (§5.3)
+- [x] Money: `Currency` (AED, INR), `Direction`, `normalizeCurrency`, `parseAmountToMinor` (truncating), `formatMoney` (en-AE / en-IN grouping, `−` and `+`, INR `₹` no space, `AED ` with space), `minorToInput`. (§5.1)
+- [x] Dates: `parseSmsDate` (3 formats, day first, no roll-over), `startOfMonth`, `addMonths`, `startOfDay`, `dayAt`, and the display formats. (§5.2)
+- [x] Ids: `newId()`; `hashString` = FNV-1a 32-bit over UTF-16 chars, 8-char hex; must match JS output bit for bit. (§5.3)
 - *Port tests:* `logic.test.ts` › money, parseSmsDate. Add golden tests for `hashString` against values produced by the JS version.
 - **Done when:** all helper tests pass on the JVM.
 

@@ -55,6 +55,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.najeemfasil.expense.core.Currency
+import com.najeemfasil.expense.core.Direction
+import com.najeemfasil.expense.core.formatMoney
 import com.najeemfasil.expense.ui.theme.Radius
 import com.najeemfasil.expense.ui.theme.Spacing
 import com.najeemfasil.expense.ui.theme.colors
@@ -400,4 +403,29 @@ fun SpinnerCard(text: String) {
         CircularProgressIndicator(Modifier.size(28.dp), color = colors.primary, strokeWidth = 3.dp)
         Body(text, muted = true)
     }
+}
+
+/**
+ * A money amount. Money out is shown negative in the normal text colour; money in with a "+"
+ * in the income colour.
+ */
+@Composable
+fun Amount(
+    minor: Long,
+    currency: Currency,
+    modifier: Modifier = Modifier,
+    direction: Direction? = null,
+    fontSize: TextUnit = 16.sp
+) {
+    val c = colors
+    val signed = if (direction == Direction.DEBIT) -minor else minor
+    Text(
+        formatMoney(signed, currency, signed = direction == Direction.CREDIT),
+        modifier = modifier,
+        color = if (direction == Direction.CREDIT) c.income else c.text,
+        fontSize = fontSize,
+        fontWeight = FontWeight.SemiBold,
+        style = TextStyle(fontFeatureSettings = "tnum"),
+        maxLines = 1
+    )
 }

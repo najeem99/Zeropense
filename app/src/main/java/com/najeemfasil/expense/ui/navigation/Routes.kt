@@ -25,9 +25,7 @@ object Routes {
     /** `id` is a transaction id, or "new" to create one. */
     fun transaction(id: String) = "transaction/${Uri.encode(id)}"
 
-    fun accountNew(digits: String = "", currency: String = "", sender: String = "") =
-        "accounts/new?digits=${Uri.encode(digits)}&currency=${Uri.encode(currency)}&sender=${Uri.encode(sender)}"
+    fun accountNew(digits: String = "", currency: String = "", sender: String = "") = "accounts/new?digits=${Uri.encode(digits)}&currency=${Uri.encode(currency)}&sender=${Uri.encode(sender)}"
 
-    fun parserNew(sample: String = "", sender: String = "") =
-        "parsers/new?sample=${Uri.encode(sample)}&sender=${Uri.encode(sender)}"
+    fun parserNew(sample: String = "", sender: String = "") = "parsers/new?sample=${Uri.encode(sample)}&sender=${Uri.encode(sender)}"
 }
