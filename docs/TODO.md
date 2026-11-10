@@ -171,7 +171,7 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** an unread message can be turned into a format, and similar unread messages move to Review.
 
 ## F19. More tab and Start over
-- [ ] **More tab**: ScanCard, four rows with subtitles, Delete all data and start over (confirm texts, wait scan → reset → open setup), privacy footer. (§12.4)
+- [x] **More tab**: ScanCard, four rows with subtitles, Delete all data and start over (confirm texts, wait scan → reset → open setup), privacy footer. (§12.4)
 - **Done when:** start over leaves a fresh database and opens setup.
 
 ## F20. Release
