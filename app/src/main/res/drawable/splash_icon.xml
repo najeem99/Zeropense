@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The splash icon area is 288 dp; the logo sits in the middle at 76 dp wide (228 x 213 px source). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <size android:width="288dp" android:height="288dp" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+    <item
+        android:width="76dp"
+        android:height="71dp"
+        android:drawable="@drawable/splash_logo"
+        android:gravity="center" />
+</layer-list>

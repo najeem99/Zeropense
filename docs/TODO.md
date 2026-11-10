@@ -33,13 +33,13 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** decisions are written down here.
 
 ## F1. Project foundation
-- [ ] New Android Studio/Gradle project (Kotlin DSL), application id, app name `Zeropense`, version 1.0.0. (§2)
-- [ ] Portrait only; edge-to-edge; follows system light/dark.
-- [ ] Adaptive icon from `assets/images/android-icon-*.png` (background `#E6F4FE`, monochrome icon). (§2)
-- [ ] Splash (SplashScreen API): background `#208AEF`, `splash-icon.png`, 76 dp. (§2)
-- [ ] Release build: R8 minify + resource shrinking; signing config; `arm64-v8a` only if any native lib appears.
-- [ ] Gradle speed settings: build cache on, `-Xmx4096m -XX:MaxMetaspaceSize=1024m` (port of `plugins/with-gradle-speed.js`).
-- [ ] Lint, ktlint/detekt, unit-test task; a one-command check (`./gradlew check`).
+- [x] New Android Studio/Gradle project (Kotlin DSL), application id, app name `Zeropense`, version 1.0.0. (§2)
+- [x] Portrait only; edge-to-edge; follows system light/dark.
+- [x] Adaptive icon from `assets/images/android-icon-*.png` (background `#E6F4FE`, monochrome icon). (§2)
+- [x] Splash (SplashScreen API): background `#208AEF`, `splash-icon.png`, 76 dp. (§2)
+- [x] Release build: R8 minify + resource shrinking; signing config; `arm64-v8a` only if any native lib appears.
+- [x] Gradle speed settings: build cache on, `-Xmx4096m -XX:MaxMetaspaceSize=1024m` (port of `plugins/with-gradle-speed.js`).
+- [x] Lint, ktlint/detekt, unit-test task; a one-command check (`./gradlew check`).
 - **Done when:** an empty app installs, shows the splash and icon, and `./gradlew check` passes.
 
 ## F2. Design system and app shell
