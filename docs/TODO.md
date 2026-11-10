@@ -92,13 +92,13 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** a transaction can be added, edited, re-categorised (merchant remembered) and deleted.
 
 ## F8. Transactions tab and Overview (without SMS)
-- [ ] **Transactions tab**: Add transaction, MonthSwitcher, accepted grouped by day, empty state. (§12.3)
-- [ ] Summary (pure): per currency in/out/refund/net and category spending; refunds lower spending. (§11.1)
-- [ ] Daily spending (pure): per-day debits, elapsed-days average, peak; month vs last-30-days ranges. (§11.2)
-- [ ] Donut (pure part): `buildSlices` (max 5, top 4 + "Other (n)"), `layoutArcs` with 2 px gaps. (§11.3)
-- [ ] **Spending donut** composable (Canvas): centre text, tap slice/legend to select, legend with amount and %, accessibility. (§12.13)
-- [ ] **Spent per day** bar chart (Canvas): average/selected header, bars, tap to select, 4 ticks. (§12.13)
-- [ ] **Overview tab**: Month / All time chips, MonthSwitcher, pending banner + Review now, empty state with Import SMS / Add manually, per-currency summary cards (in, out, net, refunds note, donut, daily chart), Recent (5) + See all. Leave a slot for the ScanCard (F17). (§12.1)
+- [x] **Transactions tab**: Add transaction, MonthSwitcher, accepted grouped by day, empty state. (§12.3)
+- [x] Summary (pure): per currency in/out/refund/net and category spending; refunds lower spending. (§11.1)
+- [x] Daily spending (pure): per-day debits, elapsed-days average, peak; month vs last-30-days ranges. (§11.2)
+- [x] Donut (pure part): `buildSlices` (max 5, top 4 + "Other (n)"), `layoutArcs` with 2 px gaps. (§11.3)
+- [x] **Spending donut** composable (Canvas): centre text, tap slice/legend to select, legend with amount and %, accessibility. (§12.13)
+- [x] **Spent per day** bar chart (Canvas): average/selected header, bars, tap to select, 4 ticks. (§12.13)
+- [x] **Overview tab**: Month / All time chips, MonthSwitcher, pending banner + Review now, empty state with Import SMS / Add manually, per-currency summary cards (in, out, net, refunds note, donut, daily chart), Recent (5) + See all. Leave a slot for the ScanCard (F17). (§12.1)
 - *Port tests:* `logic.test.ts` › summarize, refunds, spending donut, dailySpending.
 - **Done when:** with only manual entries, Overview and Transactions show correct per-currency totals and both charts, AED and INR never mixed. *(The app is now a usable manual expense tracker.)*
 
