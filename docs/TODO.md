@@ -114,10 +114,10 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** every ported parse/candidate test passes.
 
 ## F10. SMS engine: kinds and custom formats (pure)
-- [ ] `senderKey`, `isPersonalSender`, `templateKey` (8 words, caps masking with keep-list). (§6.6)
-- [ ] `SmsRule`, `ruleFor`, `applyRule` (by amount position). (§6.6)
-- [ ] Kind labels, `suggestKind`, `groupMessages` (by sender, then kind, biggest first, digits). (§6.7)
-- [ ] Custom parser: field marks, `buildPattern` (generalize literals, captures, 4 error texts), `applyCustomParser` (sender filter, anchored, case-insensitive + dotall, last-4 account). (§6.8)
+- [x] `senderKey`, `isPersonalSender`, `templateKey` (8 words, caps masking with keep-list). (§6.6)
+- [x] `SmsRule`, `ruleFor`, `applyRule` (by amount position). (§6.6)
+- [x] Kind labels, `suggestKind`, `groupMessages` (by sender, then kind, biggest first, digits). (§6.7)
+- [x] Custom parser: field marks, `buildPattern` (generalize literals, captures, 4 error texts), `applyCustomParser` (sender filter, anchored, case-insensitive + dotall, last-4 account). (§6.8)
 - *Port tests:* `templates.test.ts` › senderKey/templateKey, suggestKind, groupMessages, applyRule; `custom-parser.test.ts` (all); `candidates.test.ts` › SMS configuration flow.
 - **Done when:** all ported tests pass, including the regex-escaping case.
 
