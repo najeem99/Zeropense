@@ -43,10 +43,10 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** an empty app installs, shows the splash and icon, and `./gradlew check` passes.
 
 ## F2. Design system and app shell
-- [ ] Theme tokens light/dark, spacing, radius (§12.14).
-- [ ] Shared composables: Screen (scroll + large title), Card, Label, Body, Button (primary/secondary/danger/ghost), Chip, ChipRow, Field (single/multiline), Amount, Row, Empty, MonthSwitcher, CheckRow (checkbox row from setup), confirm-dialog helper, spinner card. (§12)
-- [ ] Navigation: bottom bar with Overview / Review / Transactions / More (Material icons `donut_large`, `inbox`, `receipt_long`, `more_horiz`), badge slot on Review; stack destinations: Transaction (modal-style, `id` or `new`), Paste an SMS, Set up bank SMS, Cards & accounts, Add card or account (args digits/currency/sender), Categories, SMS configuration, Set up SMS format (args sample/sender), with the header titles from §12.
-- [ ] Placeholder content in each destination.
+- [x] Theme tokens light/dark, spacing, radius (§12.14).
+- [x] Shared composables: Screen (scroll + large title), Card, Label, Body, Button (primary/secondary/danger/ghost), Chip, ChipRow, Field (single/multiline), Amount, Row, Empty, MonthSwitcher, CheckRow (checkbox row from setup), confirm-dialog helper, spinner card. (§12)
+- [x] Navigation: bottom bar with Overview / Review / Transactions / More (Material icons `donut_large`, `inbox`, `receipt_long`, `more_horiz`), badge slot on Review; stack destinations: Transaction (modal-style, `id` or `new`), Paste an SMS, Set up bank SMS, Cards & accounts, Add card or account (args digits/currency/sender), Categories, SMS configuration, Set up SMS format (args sample/sender), with the header titles from §12.
+- [x] Placeholder content in each destination.
 - **Done when:** every route opens with the right title and back behaviour, in light and dark.
 
 ## F3. Core helpers (pure)

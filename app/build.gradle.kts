@@ -55,6 +55,18 @@ android {
         compose = true
     }
 
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                // Screen tests render every screen with Robolectric and save PNGs under build/outputs/roborazzi.
+                it.systemProperty("roborazzi.test.record", "true")
+                it.systemProperty("robolectric.graphicsMode", "NATIVE")
+                it.maxHeapSize = "2g"
+            }
+        }
+    }
+
     lint {
         warningsAsErrors = false
         abortOnError = true
@@ -77,9 +89,27 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons.extended)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.compose.ui.tooling.preview)
     debugImplementation(libs.compose.ui.tooling)
 
+    debugImplementation(libs.compose.ui.test.manifest)
+
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
     testImplementation(libs.kotlin.test)
+}
+
+androidComponents {
+    beforeVariants(selector().withBuildType("release")) {
+        // Screen tests need the debug-only test activity; unit tests run on the debug variant.
+        it.enableUnitTest = false
+    }
 }
