@@ -178,7 +178,7 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - [ ] If D1 = yes: install the native build over the Expo build on a test phone and confirm transactions, cards, rules, merchants and the last-scan marker survive and nothing re-imports.
 - [ ] Full regression pass against [§12](FSD.md#12-screens) in light and dark, small and large screens, TalkBack labels on charts.
 - [ ] Performance check: setup import of a year of SMS, 5,000 SMS batch, smooth scrolling in Review.
-- [ ] Release APK, replace `apk/Zeropense.apk`, update README (build steps, stack, checks).
+- [x] Release APK, replace `apk/Zeropense.apk`, update README (build steps, stack, checks).
 - **Done when:** the release APK passes the regression pass on a real phone.
 
 ---
