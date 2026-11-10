@@ -166,8 +166,8 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** a new bank SMS appears in Review after reopening the app, without duplicates across repeated scans.
 
 ## F18. SMS configuration (custom formats)
-- [ ] **SMS configuration screen**: Set up a new SMS format, unread messages (newest 20, Set up this format / Ignore), Your formats (Delete + confirm), Built in list (per Q1 decision). (§12.11)
-- [ ] **Set up SMS format screen**: sample field (reset on edit), 1 amount picker, 2 direction + currency, 3 card digits, 4 merchant/date token tapping with colours, 5 sender filter + name, live errors / read-back failure / preview, Save (name fallback) → recheck unread → alert → back. (§12.11)
+- [x] **SMS configuration screen**: Set up a new SMS format, unread messages (newest 20, Set up this format / Ignore), Your formats (Delete + confirm), Built in list (per Q1 decision). (§12.11)
+- [x] **Set up SMS format screen**: sample field (reset on edit), 1 amount picker, 2 direction + currency, 3 card digits, 4 merchant/date token tapping with colours, 5 sender filter + name, live errors / read-back failure / preview, Save (name fallback) → recheck unread → alert → back. (§12.11)
 - **Done when:** an unread message can be turned into a format, and similar unread messages move to Review.
 
 ## F19. More tab and Start over

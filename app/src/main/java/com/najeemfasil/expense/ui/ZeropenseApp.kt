@@ -15,6 +15,8 @@ import com.najeemfasil.expense.feature.review.ReviewScreen
 import com.najeemfasil.expense.feature.sms.AutoInboxScan
 import com.najeemfasil.expense.feature.sms.ImportSmsScreen
 import com.najeemfasil.expense.feature.sms.LocalSmsScanner
+import com.najeemfasil.expense.feature.sms.ParserNewScreen
+import com.najeemfasil.expense.feature.sms.ParsersScreen
 import com.najeemfasil.expense.feature.sms.ScanCard
 import com.najeemfasil.expense.feature.sms.SmsScanner
 import com.najeemfasil.expense.feature.sms.SmsSetupScreen
@@ -26,7 +28,6 @@ import com.najeemfasil.expense.ui.components.Screen
 import com.najeemfasil.expense.ui.navigation.AppNav
 import com.najeemfasil.expense.ui.navigation.Destinations
 import com.najeemfasil.expense.ui.navigation.LocalNavigator
-import com.najeemfasil.expense.ui.navigation.PlaceholderScreen
 import com.najeemfasil.expense.ui.navigation.Routes
 
 /** The real screens. Destinations still to be built show a placeholder. */
@@ -41,6 +42,7 @@ fun appDestinations() = Destinations(
             ScanCard()
             Button("Set up bank SMS", { nav.push(Routes.SMS_SETUP) })
             Button("Paste an SMS", { nav.push(Routes.IMPORT_SMS) })
+            Button("SMS configuration", { nav.push(Routes.PARSERS) })
             Button("Cards & accounts", { nav.push(Routes.ACCOUNTS) })
             Button("Categories", { nav.push(Routes.CATEGORIES) })
         }
@@ -54,8 +56,8 @@ fun appDestinations() = Destinations(
     accounts = { AccountsScreen() },
     accountNew = { digits, currency, sender -> AccountNewScreen(digits, currency, sender) },
     categories = { CategoriesScreen() },
-    parsers = { PlaceholderScreen() },
-    parserNew = { _, _ -> PlaceholderScreen() }
+    parsers = { ParsersScreen() },
+    parserNew = { sample, sender -> ParserNewScreen(sample, sender) }
 )
 
 @Composable
