@@ -57,12 +57,12 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** all helper tests pass on the JVM.
 
 ## F4. Database
-- [ ] Entities/tables exactly as §4.1 (`accounts`, `categories`, `transactions`, `merchant_rules`, `custom_parsers`, `unread_sms`, `settings`, `sms_rules`), with FKs (SET NULL / CASCADE), UNIQUE `sms_hash`, UNIQUE (sender_key, template_key), both indexes.
-- [ ] WAL + `foreign_keys = ON`.
-- [ ] Migrations 1→6 with seeds (§4.2, §4.3) in one transaction; `user_version = 6`. If D1 = yes: open an existing Expo `expense.db` without data loss.
-- [ ] Settings get/set (`lastSmsScanAt`, `lastSmsScanRunAt`). (§4.1)
-- [ ] Reset: drop all tables, re-migrate, re-seed. (§4.4)
-- [ ] Reactive reads (Flow) so every screen refreshes after any write. (§13 D3)
+- [x] Entities/tables exactly as §4.1 (`accounts`, `categories`, `transactions`, `merchant_rules`, `custom_parsers`, `unread_sms`, `settings`, `sms_rules`), with FKs (SET NULL / CASCADE), UNIQUE `sms_hash`, UNIQUE (sender_key, template_key), both indexes.
+- [x] WAL + `foreign_keys = ON`.
+- [x] Migrations 1→6 with seeds (§4.2, §4.3) in one transaction; `user_version = 6`. If D1 = yes: open an existing Expo `expense.db` without data loss.
+- [x] Settings get/set (`lastSmsScanAt`, `lastSmsScanRunAt`). (§4.1)
+- [x] Reset: drop all tables, re-migrate, re-seed. (§4.4)
+- [x] Reactive reads (Flow) so every screen refreshes after any write. (§13 D3)
 - *Port tests:* `repositories.test.ts` › migrates idempotently, resets to a fresh database.
 - **Done when:** a fresh install has 18 categories and the `ASPORA` rule; running migrations twice changes nothing; reset restores that state.
 

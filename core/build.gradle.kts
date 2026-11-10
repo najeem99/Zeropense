@@ -16,6 +16,10 @@ kotlin {
 }
 
 dependencies {
+    api(libs.androidx.sqlite.bundled)
+    api(libs.kotlinx.coroutines.core)
+
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test)
 }
