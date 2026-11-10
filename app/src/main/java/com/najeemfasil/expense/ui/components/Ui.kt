@@ -180,7 +180,9 @@ fun Button(
     variant: ButtonVariant = ButtonVariant.Primary,
     enabled: Boolean = true,
     minHeight: Dp = 44.dp,
-    horizontalPadding: Dp = Spacing.lg
+    horizontalPadding: Dp = Spacing.lg,
+    /** Stretch across the column, as buttons do in the Expo app; false inside rows and centred cards. */
+    fullWidth: Boolean = true
 ) {
     val c = colors
     val bg = when (variant) {
@@ -198,6 +200,7 @@ fun Button(
     val pressed by interaction.collectIsPressedAsState()
     Box(
         modifier
+            .then(if (fullWidth) Modifier.fillMaxWidth() else Modifier)
             .defaultMinSize(minHeight = minHeight)
             .alpha(
                 if (!enabled) {
@@ -354,9 +357,9 @@ fun MonthSwitcher(label: String, onPrev: () -> Unit, onNext: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Button("‹", onPrev, variant = ButtonVariant.Ghost)
+        Button("‹", onPrev, variant = ButtonVariant.Ghost, fullWidth = false)
         Body(label, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
-        Button("›", onNext, variant = ButtonVariant.Ghost)
+        Button("›", onNext, variant = ButtonVariant.Ghost, fullWidth = false)
     }
 }
 

@@ -8,6 +8,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.najeemfasil.expense.data.db.Conn
 import com.najeemfasil.expense.data.db.Db
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 val LocalDb = staticCompositionLocalOf<Db> { error("No database") }
 
@@ -22,5 +23,15 @@ fun <T> rememberDbQuery(key: Any? = Unit, query: (Conn) -> T): State<T?> {
     val current = rememberUpdatedState(query)
     return produceState<T?>(initialValue = null, db, key) {
         db.version.collectLatest { value = db.read { current.value(it) } }
+    }
+}
+
+/** Runs a write off the main thread; observers refresh when it is done. */
+@Composable
+fun rememberDbWriter(): (block: (Conn) -> Unit) -> Unit {
+    val db = LocalDb.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    return androidx.compose.runtime.remember(db, scope) {
+        { block -> scope.launch { db.write(block) } }
     }
 }

@@ -67,11 +67,11 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** a fresh install has 18 categories and the `ASPORA` rule; running migrations twice changes nothing; reset restores that state.
 
 ## F5. Categories
-- [ ] Repository: list (`kind, sort, name`), create (sort = max+1), delete (transactions → uncategorised, rules cascade), list/learn/delete merchant rules; never learn `refund`. (§8.1, §8.4)
-- [ ] Categorizer (pure): `merchantKey` with noise words, `suggestCategory` (exact, then longest whole-word key ≥ 3). (§8.2, §8.3)
-- [ ] Appearance: icon + colour slot per seeded id, palette light/dark, neutral, `hashCode` slot for user categories, tint, series colour. (§8.5)
-- [ ] CategoryIcon and CategoryPill composables. (§8.5)
-- [ ] **Categories screen**: Remembered merchants (Forget), Expense / Income lists (Delete + confirm), Add category (name + kind). (§12.8)
+- [x] Repository: list (`kind, sort, name`), create (sort = max+1), delete (transactions → uncategorised, rules cascade), list/learn/delete merchant rules; never learn `refund`. (§8.1, §8.4)
+- [x] Categorizer (pure): `merchantKey` with noise words, `suggestCategory` (exact, then longest whole-word key ≥ 3). (§8.2, §8.3)
+- [x] Appearance: icon + colour slot per seeded id, palette light/dark, neutral, `hashCode` slot for user categories, tint, series colour. (§8.5)
+- [x] CategoryIcon and CategoryPill composables. (§8.5)
+- [x] **Categories screen**: Remembered merchants (Forget), Expense / Income lists (Delete + confirm), Add category (name + kind). (§12.8)
 - *Port tests:* `logic.test.ts` › categorizer.
 - **Done when:** adding/deleting categories and forgetting merchants works and the lists update live.
 

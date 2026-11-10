@@ -100,6 +100,9 @@ dependencies {
     debugImplementation(libs.compose.ui.test.manifest)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    // The Android artifact of the bundled SQLite has no library for the test JVM; this one does.
+    testImplementation(libs.androidx.sqlite.bundled.jvm)
     testImplementation(libs.robolectric)
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
