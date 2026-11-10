@@ -5,7 +5,8 @@ package com.najeemfasil.expense.core
  * formats stored by it), so it matches the same text on the JVM and on every Android version:
  *
  * - `\s` matches what JavaScript's does, including the no-break space banks put in SMS;
- * - `\d` is ASCII 0-9 only;
+ * - `\d` is ASCII 0-9 only, `\w` is ASCII letters, digits and underscore, and `\b` is a boundary
+ *   between those and anything else (Android's regex engine would use Unicode classes);
  * - `$` only matches at the very end, unless [multiline].
  *
  * See FSD §13 Q9.
@@ -21,6 +22,10 @@ fun jsRegex(pattern: String, ignoreCase: Boolean = false, multiline: Boolean = f
 
 private const val JS_SPACE = "\\t\\n\\u000B\\f\\r \\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF"
 
+private const val JS_WORD = "A-Za-z0-9_"
+private const val JS_BOUNDARY = "(?:(?<=[$JS_WORD])(?![$JS_WORD])|(?<![$JS_WORD])(?=[$JS_WORD]))"
+private const val JS_NOT_BOUNDARY = "(?:(?<=[$JS_WORD])(?=[$JS_WORD])|(?<![$JS_WORD])(?![$JS_WORD]))"
+
 internal fun translateJsPattern(pattern: String, multiline: Boolean = false): String {
     val out = StringBuilder(pattern.length + 16)
     var inClass = false
@@ -34,6 +39,10 @@ internal fun translateJsPattern(pattern: String, multiline: Boolean = false): St
                 'S' -> out.append(if (inClass) "\\S" else "[^$JS_SPACE]")
                 'd' -> out.append(if (inClass) "0-9" else "[0-9]")
                 'D' -> out.append(if (inClass) "\\D" else "[^0-9]")
+                'w' -> out.append(if (inClass) JS_WORD else "[$JS_WORD]")
+                'W' -> out.append(if (inClass) "\\W" else "[^$JS_WORD]")
+                'b' -> out.append(if (inClass) "\\b" else JS_BOUNDARY)
+                'B' -> out.append(if (inClass) "\\B" else JS_NOT_BOUNDARY)
                 else -> out.append(ch).append(next)
             }
             i += 2

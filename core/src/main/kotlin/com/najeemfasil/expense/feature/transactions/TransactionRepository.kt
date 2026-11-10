@@ -8,6 +8,7 @@ import com.najeemfasil.expense.data.db.Conn
 import com.najeemfasil.expense.data.db.Row
 import com.najeemfasil.expense.feature.categories.learnRule
 import com.najeemfasil.expense.feature.dashboard.SummaryInput
+import com.najeemfasil.expense.feature.sms.smsSnippet
 
 enum class TransactionStatus(val db: String) {
     PENDING("pending"),
@@ -212,5 +213,6 @@ data class TransactionTitle(val text: String, val isSnippet: Boolean)
 /** The merchant, else a short snippet of the SMS, else the direction. */
 fun transactionTitle(merchant: String?, smsBody: String?, direction: Direction): TransactionTitle {
     if (!merchant.isNullOrEmpty()) return TransactionTitle(merchant, false)
+    if (!smsBody.isNullOrEmpty()) return TransactionTitle(smsSnippet(smsBody), true)
     return TransactionTitle(if (direction == Direction.CREDIT) "Money in" else "Money out", true)
 }

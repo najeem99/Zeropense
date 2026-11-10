@@ -103,13 +103,13 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** with only manual entries, Overview and Transactions show correct per-currency totals and both charts, AED and INR never mixed. *(The app is now a usable manual expense tracker.)*
 
 ## F9. SMS engine: extraction (pure)
-- [ ] Types `RawSms`, `ParsedSms`. (§6.1)
-- [ ] `findAmountCandidates` (with currency + bare decimals, context, looksLikeBalance) and `findDigitsCandidates`. (§6.2, §6.3)
-- [ ] Generic extractor: amount, `findDirection`, `findMerchant` + `cleanMerchant`, `findAccount`, `findDate`, `smsSnippet`, `incomeCategory`, `incomeLabel`, `extract`. (§6.4)
-- [ ] Bank profiles (HDFC, ICICI, SBI, Axis, Kotak), `profileForSender`, `parseSms` chain. (§6.5)
-- [ ] `skipReason` filters and `PERSONAL_SENDER`. (§6.5)
-- [ ] Regex dialect checks: case-insensitive, NBSP/Unicode spaces, `Locale.ROOT`. (§13 Q9)
-- [ ] Switch the row title to use `smsSnippet` (F7 follow-up).
+- [x] Types `RawSms`, `ParsedSms`. (§6.1)
+- [x] `findAmountCandidates` (with currency + bare decimals, context, looksLikeBalance) and `findDigitsCandidates`. (§6.2, §6.3)
+- [x] Generic extractor: amount, `findDirection`, `findMerchant` + `cleanMerchant`, `findAccount`, `findDate`, `smsSnippet`, `incomeCategory`, `incomeLabel`, `extract`. (§6.4)
+- [x] Bank profiles (HDFC, ICICI, SBI, Axis, Kotak), `profileForSender`, `parseSms` chain. (§6.5)
+- [x] `skipReason` filters and `PERSONAL_SENDER`. (§6.5)
+- [x] Regex dialect checks: case-insensitive, NBSP/Unicode spaces, `Locale.ROOT`. (§13 Q9)
+- [x] Switch the row title to use `smsSnippet` (F7 follow-up).
 - *Port tests:* `parse.test.ts` (all), `candidates.test.ts` › findAmountCandidates, findDigitsCandidates.
 - **Done when:** every ported parse/candidate test passes.
 
