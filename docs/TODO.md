@@ -127,11 +127,11 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** tests pass.
 
 ## F12. Import pipeline
-- [ ] `smsHash`, `matchAccount` (digits first, never guess unknown digits, single-account-in-currency fallback). (§7.2)
-- [ ] `processSms`: rule → custom parsers → unparsed/ignored; occurredAt same-day rule; account resolution with fixed account; duplicate; merchant/income label; category/income category. (§7.2)
-- [ ] Ingest context loader (rules, parsers, accounts, merchant rules, dedupe window ±1 day). (§7.1)
-- [ ] `importBatch`: chunks of 200, progress, auto-accept except duplicates, in-batch dedupe, one transaction per chunk, `INSERT OR IGNORE`, unread insert/resolve, ImportSummary counting. (§7.3)
-- [ ] `importSms`, `recheckUnread`, `clearSmsTransactions`, `countSmsTransactions`, unread list/dismiss; custom parser list/create/delete; SMS rules list (template key recomputed from sample)/replace for senders/delete. (§7.4, §4.1)
+- [x] `smsHash`, `matchAccount` (digits first, never guess unknown digits, single-account-in-currency fallback). (§7.2)
+- [x] `processSms`: rule → custom parsers → unparsed/ignored; occurredAt same-day rule; account resolution with fixed account; duplicate; merchant/income label; category/income category. (§7.2)
+- [x] Ingest context loader (rules, parsers, accounts, merchant rules, dedupe window ±1 day). (§7.1)
+- [x] `importBatch`: chunks of 200, progress, auto-accept except duplicates, in-batch dedupe, one transaction per chunk, `INSERT OR IGNORE`, unread insert/resolve, ImportSummary counting. (§7.3)
+- [x] `importSms`, `recheckUnread`, `clearSmsTransactions`, `countSmsTransactions`, unread list/dismiss; custom parser list/create/delete; SMS rules list (template key recomputed from sample)/replace for senders/delete. (§7.4, §4.1)
 - *Port tests:* `ingest.test.ts` (all), `real-samples.test.ts` (all), `repositories.test.ts` › imports nothing until configured, imports configured kinds + duplicates + never re-imports, setup imports accepted but duplicates pending, approve all with/without duplicates, clears SMS but keeps manual, learns categories on accept, keeps unknown kinds and re-reads after a format, **5,000 SMS < 15 s**.
 - **Done when:** all ported pipeline tests pass on a real SQLite (Robolectric or instrumented).
 
