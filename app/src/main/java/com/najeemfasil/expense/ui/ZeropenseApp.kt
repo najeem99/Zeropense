@@ -6,6 +6,7 @@ import com.najeemfasil.expense.feature.accounts.AccountNewScreen
 import com.najeemfasil.expense.feature.accounts.AccountsScreen
 import com.najeemfasil.expense.feature.categories.CategoriesScreen
 import com.najeemfasil.expense.feature.dashboard.OverviewScreen
+import com.najeemfasil.expense.feature.sms.ImportSmsScreen
 import com.najeemfasil.expense.feature.transactions.TransactionScreen
 import com.najeemfasil.expense.feature.transactions.TransactionsScreen
 import com.najeemfasil.expense.ui.components.Button
@@ -25,12 +26,13 @@ fun appDestinations() = Destinations(
         // Temporary links until the More tab is built (F19).
         val nav = LocalNavigator.current
         Screen(title = "More") {
+            Button("Paste an SMS", { nav.push(Routes.IMPORT_SMS) })
             Button("Cards & accounts", { nav.push(Routes.ACCOUNTS) })
             Button("Categories", { nav.push(Routes.CATEGORIES) })
         }
     },
     transaction = { id -> TransactionScreen(id) },
-    importSms = { PlaceholderScreen() },
+    importSms = { ImportSmsScreen() },
     smsSetup = { PlaceholderScreen() },
     accounts = { AccountsScreen() },
     accountNew = { digits, currency, sender -> AccountNewScreen(digits, currency, sender) },

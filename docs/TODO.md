@@ -136,9 +136,9 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** all ported pipeline tests pass on a real SQLite (Robolectric or instrumented).
 
 ## F13. Paste an SMS
-- [ ] **Paste an SMS screen**: intro, 3 example chips, Sender/Message fields, Read this SMS, four result cards (added to review / ignored / already imported / couldn't read) with Go to review and Set up this SMS format. (§12.10)
-- [ ] Wire Overview's empty-state "Import SMS" and the More row to it.
-- [ ] Finish F6's detected-cards test now that SMS transactions exist.
+- [x] **Paste an SMS screen**: intro, 3 example chips, Sender/Message fields, Read this SMS, four result cards (added to review / ignored / already imported / couldn't read) with Go to review and Set up this SMS format. (§12.10)
+- [x] Wire Overview's empty-state "Import SMS" and the More row to it.
+- [x] Finish F6's detected-cards test now that SMS transactions exist.
 - **Done when:** pasting a message for a configured kind (created in a test DB) lands in Review; others show the right reason.
 
 ## F14. Review queue
