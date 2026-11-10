@@ -154,8 +154,8 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** on a real phone, senders and messages for a period are listed correctly and nothing runs without permission.
 
 ## F16. SMS setup wizard
-- [ ] Setup state (pure): `PERIODS`, `periodStart`, `mergeSenders` (drop personal, merge by key, suggested rule, sort), `kindId`, `initialChoices`, `collectDigits`, `kindsWithoutDigits`, `cardChoiceComplete`, `buildRules`, `countIncluded`. (§12.9)
-- [ ] Step 1 Period (permission, counting). Step 2 Senders (with amounts / collapsible others, bank? badge, Next count). Step 3 Kinds (main vs other kinds, tick only with amount, amount picker with balance hint, direction and currency chips). Step 4 Cards (per number: existing / + New card form / Skip; no-digit kinds fixed account; continue rule). Step 5 Confirm (counts, earlier SMS deletion warning). Step 6 Importing (exact order: wait scan → cards/hints → clear SMS → replace rules → import auto-accept with progress → scan markers). Step 7 Done (counts, Go to Overview). Busy and error cards. (§12.9)
+- [x] Setup state (pure): `PERIODS`, `periodStart`, `mergeSenders` (drop personal, merge by key, suggested rule, sort), `kindId`, `initialChoices`, `collectDigits`, `kindsWithoutDigits`, `cardChoiceComplete`, `buildRules`, `countIncluded`. (§12.9)
+- [x] Step 1 Period (permission, counting). Step 2 Senders (with amounts / collapsible others, bank? badge, Next count). Step 3 Kinds (main vs other kinds, tick only with amount, amount picker with balance hint, direction and currency chips). Step 4 Cards (per number: existing / + New card form / Skip; no-digit kinds fixed account; continue rule). Step 5 Confirm (counts, earlier SMS deletion warning). Step 6 Importing (exact order: wait scan → cards/hints → clear SMS → replace rules → import auto-accept with progress → scan markers). Step 7 Done (counts, Go to Overview). Busy and error cards. (§12.9)
 - *Port tests:* `templates.test.ts` › setup state (both cases).
 - **Done when:** on a real phone, setup with real bank SMS imports the expected transactions into totals, duplicates into Review, and creates the cards.
 

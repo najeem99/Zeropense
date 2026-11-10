@@ -63,3 +63,9 @@ class FakeSmsInbox(var messages: List<InboxMessage> = emptyList(), var granted: 
             .take(limit)
     }
 }
+
+/** After SMS setup, ongoing scans start from here instead of re-reading the inbox. */
+fun markScannedUpTo(db: com.najeemfasil.expense.data.db.Conn, ts: Long, now: Long = System.currentTimeMillis()) {
+    com.najeemfasil.expense.data.db.setSetting(db, com.najeemfasil.expense.data.db.SettingKey.LAST_SMS_SCAN_AT, ts.toString())
+    com.najeemfasil.expense.data.db.setSetting(db, com.najeemfasil.expense.data.db.SettingKey.LAST_SMS_SCAN_RUN_AT, now.toString())
+}
