@@ -12,4 +12,5 @@ ktlint_code_style = android_studio
 # Composable functions are named like types.
 ktlint_function_naming_ignore_when_annotated_with = Composable
 ktlint_standard_no-wildcard-imports = disabled
+ktlint_standard_filename = disabled
 ktlint_standard_max-line-length = disabled

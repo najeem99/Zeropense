@@ -84,11 +84,11 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - **Done when:** cards can be added, renamed and deleted.
 
 ## F7. Manual transactions
-- [ ] Transaction model, status lifecycle, queries: get, pending list/count, accepted in range (limit, see Q3), summary inputs, dedupe window. (§10.1, §10.2)
-- [ ] Save (create manual = accepted / update = accepted) + learn rule; remove (manual → delete, SMS → rejected); `setStatus` in chunks of 500 with learning; `approveAllPending(includeDuplicates)`. (§10.3)
-- [ ] Lookups: account/category names, card name (`Card ••1234` fallback). Row title rule (merchant / SMS snippet / Money in-out); the snippet needs `smsSnippet` from F9, so use merchant or Money in/out until then. (§10.5)
-- [ ] TransactionRow composable. (§12.3)
-- [ ] **Transaction screen**: Expense/Income/Refund chips and their rules, amount, card chips (sets currency), currency chips when no card, refund note, Merchant/From, category chips (toggle, hidden for refunds), learn hint, date (keep time if unchanged, else 12:00; picker per Q6), note, SMS card, Save / Save and accept, Reject (pending), Delete + confirm (accepted), validation alerts. (§12.5)
+- [x] Transaction model, status lifecycle, queries: get, pending list/count, accepted in range (limit, see Q3), summary inputs, dedupe window. (§10.1, §10.2)
+- [x] Save (create manual = accepted / update = accepted) + learn rule; remove (manual → delete, SMS → rejected); `setStatus` in chunks of 500 with learning; `approveAllPending(includeDuplicates)`. (§10.3)
+- [x] Lookups: account/category names, card name (`Card ••1234` fallback). Row title rule (merchant / SMS snippet / Money in-out); the snippet needs `smsSnippet` from F9, so use merchant or Money in/out until then. (§10.5)
+- [x] TransactionRow composable. (§12.3)
+- [x] **Transaction screen**: Expense/Income/Refund chips and their rules, amount, card chips (sets currency), currency chips when no card, refund note, Merchant/From, category chips (toggle, hidden for refunds), learn hint, date (keep time if unchanged, else 12:00; picker per Q6), note, SMS card, Save / Save and accept, Reject (pending), Delete + confirm (accepted), validation alerts. (§12.5)
 - **Done when:** a transaction can be added, edited, re-categorised (merchant remembered) and deleted.
 
 ## F8. Transactions tab and Overview (without SMS)

@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import com.najeemfasil.expense.feature.accounts.AccountNewScreen
 import com.najeemfasil.expense.feature.accounts.AccountsScreen
 import com.najeemfasil.expense.feature.categories.CategoriesScreen
+import com.najeemfasil.expense.feature.transactions.TransactionScreen
 import com.najeemfasil.expense.ui.components.Button
 import com.najeemfasil.expense.ui.components.Screen
 import com.najeemfasil.expense.ui.navigation.AppNav
@@ -22,11 +23,12 @@ fun appDestinations() = Destinations(
         // Temporary links until the More tab is built (F19).
         val nav = LocalNavigator.current
         Screen(title = "More") {
+            Button("Add transaction", { nav.push(Routes.transaction("new")) })
             Button("Cards & accounts", { nav.push(Routes.ACCOUNTS) })
             Button("Categories", { nav.push(Routes.CATEGORIES) })
         }
     },
-    transaction = { PlaceholderScreen() },
+    transaction = { id -> TransactionScreen(id) },
     importSms = { PlaceholderScreen() },
     smsSetup = { PlaceholderScreen() },
     accounts = { AccountsScreen() },
