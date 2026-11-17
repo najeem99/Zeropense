@@ -125,7 +125,33 @@ INSERT OR IGNORE INTO categories (id, name, kind, sort) VALUES ('remittance', 'R
 INSERT OR IGNORE INTO merchant_rules (merchant_key, category_id, updated_at) VALUES ('ASPORA', 'remittance', 0);
 """
 
-const val LATEST_VERSION = 6
+/**
+ * Debts with people (usually picked from the phone's contacts). "gave" = money I gave them
+ * (they owe me), "got" = money I got from them (I owe them). Not part of spending.
+ */
+private const val V7 = """
+CREATE TABLE debt_people (
+  id TEXT PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL,
+  phone TEXT,                                  -- as stored in the contact, may be local format
+  contact_key TEXT,                            -- ContactsContract lookup key, when picked from contacts
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE debts (
+  id TEXT PRIMARY KEY NOT NULL,
+  person_id TEXT NOT NULL REFERENCES debt_people(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,                          -- gave | got
+  amount_minor INTEGER NOT NULL,
+  currency TEXT NOT NULL,
+  note TEXT,
+  occurred_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX debts_person_time ON debts (person_id, occurred_at);
+"""
+
+const val LATEST_VERSION = 7
 
 fun userVersion(db: Conn): Int = db.first("PRAGMA user_version") { it.int(0) } ?: 0
 
@@ -148,6 +174,7 @@ fun migrate(db: Conn, upTo: Int = LATEST_VERSION) {
         if (version < 4 && upTo >= 4) db.script(V4)
         if (version < 5 && upTo >= 5) db.script(V5)
         if (version < 6 && upTo >= 6) db.script(V6)
+        if (version < 7 && upTo >= 7) db.script(V7)
     }
     db.run("PRAGMA user_version = $upTo")
 }

@@ -64,7 +64,11 @@ class Destinations(
     val accountNew: @Composable (digits: String, currency: String, sender: String) -> Unit,
     val categories: @Composable () -> Unit,
     val parsers: @Composable () -> Unit,
-    val parserNew: @Composable (sample: String, sender: String) -> Unit
+    val parserNew: @Composable (sample: String, sender: String) -> Unit,
+    val debts: @Composable () -> Unit = { PlaceholderScreen() },
+    val debtPerson: @Composable (id: String) -> Unit = { PlaceholderScreen() },
+    val debtEntry: @Composable (person: String, id: String, kind: String) -> Unit = { _, _, _ -> PlaceholderScreen() },
+    val backup: @Composable () -> Unit = { PlaceholderScreen() }
 )
 
 private const val ANIM_MS = 250
@@ -114,6 +118,12 @@ fun AppNav(destinations: Destinations, pendingCount: Int = 0) {
                 stack(Routes.PARSER_NEW, "Set up SMS format", navigator, args = listOf("sample", "sender")) { e ->
                     destinations.parserNew(e.arg("sample"), e.arg("sender"))
                 }
+                stack(Routes.DEBTS, "Debts", navigator) { destinations.debts() }
+                stack(Routes.DEBT_PERSON, "Debts", navigator, args = listOf("id")) { e -> destinations.debtPerson(e.arg("id")) }
+                stack(Routes.DEBT_ENTRY, "Debt entry", navigator, args = listOf("person", "id", "kind")) { e ->
+                    destinations.debtEntry(e.arg("person"), e.arg("id"), e.arg("kind"))
+                }
+                stack(Routes.BACKUP, "Backup & restore", navigator) { destinations.backup() }
             }
         }
     }

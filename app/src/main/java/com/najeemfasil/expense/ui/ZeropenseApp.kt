@@ -9,8 +9,12 @@ import com.najeemfasil.expense.data.LocalSmsInbox
 import com.najeemfasil.expense.data.rememberDbQuery
 import com.najeemfasil.expense.feature.accounts.AccountNewScreen
 import com.najeemfasil.expense.feature.accounts.AccountsScreen
+import com.najeemfasil.expense.feature.backup.BackupScreen
 import com.najeemfasil.expense.feature.categories.CategoriesScreen
 import com.najeemfasil.expense.feature.dashboard.OverviewScreen
+import com.najeemfasil.expense.feature.debts.DebtEntryScreen
+import com.najeemfasil.expense.feature.debts.DebtPersonScreen
+import com.najeemfasil.expense.feature.debts.DebtsScreen
 import com.najeemfasil.expense.feature.insights.InsightsScreen
 import com.najeemfasil.expense.feature.more.MoreScreen
 import com.najeemfasil.expense.feature.review.ReviewScreen
@@ -45,7 +49,11 @@ fun appDestinations() = Destinations(
     accountNew = { digits, currency, sender -> AccountNewScreen(digits, currency, sender) },
     categories = { CategoriesScreen() },
     parsers = { ParsersScreen() },
-    parserNew = { sample, sender -> ParserNewScreen(sample, sender) }
+    parserNew = { sample, sender -> ParserNewScreen(sample, sender) },
+    debts = { DebtsScreen() },
+    debtPerson = { id -> DebtPersonScreen(id) },
+    debtEntry = { person, id, kind -> DebtEntryScreen(person, id, kind) },
+    backup = { BackupScreen() }
 )
 
 @Composable

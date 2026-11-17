@@ -52,7 +52,10 @@ class Conn(private val raw: SQLiteConnection) : AutoCloseable {
     internal fun changes(): Int {
         changesStmt.reset()
         changesStmt.step()
-        return changesStmt.getLong(0).toInt()
+        val n = changesStmt.getLong(0).toInt()
+        // Leave no statement in progress (VACUUM INTO refuses to run otherwise).
+        changesStmt.reset()
+        return n
     }
 
     /** Runs one statement and returns the number of rows it changed. */

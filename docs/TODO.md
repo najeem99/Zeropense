@@ -187,6 +187,22 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - [x] No schema change: reads the existing `transactions` table only.
 - **Done when:** a category can be followed by day, week, month and year, and the calendar shows each day's spending.
 
+## F22. Debts with contacts, WhatsApp sharing, backup (added after the rebuild, 2026-11-17)
+- [x] Schema v7: `debt_people` (name, phone, contact lookup key) and `debts` (kind `gave`/`got`, amount, currency, note,
+  date), FK CASCADE from person. Older databases upgrade in place; debts never count as spending.
+- [x] Debts screen (More › Debts): totals “You’ll get / You’ll give” per currency, people with balances, add a person
+  from the phone's contacts (system picker on phone numbers, no contacts permission) or by name and phone.
+- [x] Person screen: balance, entries newest first, “You gave” / “You got”, edit name/phone, delete person.
+- [x] Entry screen: kind, amount, currency, date from a date picker (any day, keeps the time of day), note; edit, delete.
+- [x] Share on WhatsApp: the person's account or one entry, written from my side (“I gave you…”); opens the person's
+  chat when the number can be made international (SIM country UAE/India for local numbers), else WhatsApp's chat
+  picker; “Share another way” uses the system share sheet.
+- [x] Data survives a reinstall: (1) Android Auto Backup of `files/SQLite/` to the Google account (and device transfer);
+  (2) More › Backup & restore: an automatic `Zeropense-backup.db` in a folder the user picks, written each time the
+  app goes to the background, a “Save a backup file” copy, and “Restore from a backup file” (checked, upgraded, then
+  replaces all rows). More shows “Reinstalled Zeropense?” while the database is empty.
+- **Done when:** core and screen tests pass; release APK builds.
+
 ---
 
 ## Coverage check: every existing file → TODO item

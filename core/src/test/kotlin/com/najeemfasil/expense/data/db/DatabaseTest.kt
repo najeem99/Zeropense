@@ -20,7 +20,7 @@ class DatabaseTest {
     @Test
     fun freshInstallHasTheSeeds() {
         val db = testDb()
-        assertEquals(6, userVersion(db))
+        assertEquals(LATEST_VERSION, userVersion(db))
         assertEquals(18, db.count("categories"))
         assertEquals(
             listOf("ASPORA" to "remittance"),
@@ -37,7 +37,10 @@ class DatabaseTest {
             names
         )
         assertEquals(
-            setOf("accounts", "categories", "transactions", "merchant_rules", "custom_parsers", "unread_sms", "settings", "sms_rules"),
+            setOf(
+                "accounts", "categories", "transactions", "merchant_rules", "custom_parsers", "unread_sms", "settings", "sms_rules",
+                "debt_people", "debts"
+            ),
             db.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'") { it.text(0) }.toSet()
         )
         assertEquals(1, db.first("PRAGMA foreign_keys") { it.int(0) })
@@ -48,7 +51,7 @@ class DatabaseTest {
         val db = testDb()
         migrate(db)
         migrate(db)
-        assertEquals(6, userVersion(db))
+        assertEquals(LATEST_VERSION, userVersion(db))
         assertEquals(18, db.count("categories"))
         assertEquals(1, db.count("merchant_rules"))
     }
@@ -62,7 +65,7 @@ class DatabaseTest {
         db.run("INSERT INTO merchant_rules (merchant_key, category_id, updated_at) VALUES ('NOON', 'refund', 1)")
         db.run("INSERT INTO merchant_rules (merchant_key, category_id, updated_at) VALUES ('LULU', 'groceries', 1)")
         migrate(db)
-        assertEquals(6, userVersion(db))
+        assertEquals(LATEST_VERSION, userVersion(db))
         assertEquals("bank", db.first("SELECT kind FROM accounts WHERE id = 'a'") { it.text(0) })
         // V5 drops learned refund rules, V6 adds Aspora.
         assertEquals(
@@ -105,7 +108,7 @@ class DatabaseTest {
         assertEquals(18, db.count("categories"))
         assertEquals(listOf("ASPORA"), db.query("SELECT merchant_key FROM merchant_rules") { it.text(0) })
         assertNull(getSetting(db, SettingKey.LAST_SMS_SCAN_RUN_AT))
-        assertEquals(6, userVersion(db))
+        assertEquals(LATEST_VERSION, userVersion(db))
         assertEquals(1, db.first("PRAGMA foreign_keys") { it.int(0) })
     }
 

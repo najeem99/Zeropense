@@ -15,8 +15,8 @@ android {
         minSdk = 24
         targetSdk = 36
         // The Expo build shipped versionCode 1.
-        versionCode = 3
-        versionName = "1.1.0"
+        versionCode = 4
+        versionName = "1.2.0"
     }
 
     signingConfigs {

@@ -1,6 +1,7 @@
 package com.najeemfasil.expense
 
 import android.app.Application
+import com.najeemfasil.expense.data.Backups
 import com.najeemfasil.expense.data.db.Db
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
@@ -17,9 +18,14 @@ class ZeropenseApplication : Application() {
     lateinit var database: Deferred<Db>
         private set
 
+    /** Backup files outside the app (survive uninstalling). */
+    lateinit var backups: Deferred<Backups>
+        private set
+
     override fun onCreate() {
         super.onCreate()
         database = appScope.async(Dispatchers.IO) { Db.open(databaseFile().path) }
+        backups = appScope.async { Backups(this@ZeropenseApplication, database.await()) }
     }
 
     /**
