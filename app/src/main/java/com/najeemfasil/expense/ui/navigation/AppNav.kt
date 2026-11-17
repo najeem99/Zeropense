@@ -68,7 +68,12 @@ class Destinations(
     val debts: @Composable () -> Unit = { PlaceholderScreen() },
     val debtPerson: @Composable (id: String) -> Unit = { PlaceholderScreen() },
     val debtEntry: @Composable (person: String, id: String, kind: String) -> Unit = { _, _, _ -> PlaceholderScreen() },
-    val backup: @Composable () -> Unit = { PlaceholderScreen() }
+    val backup: @Composable () -> Unit = { PlaceholderScreen() },
+    val cardPayments: @Composable () -> Unit = {},
+    val cardPaymentNew: @Composable () -> Unit = {},
+    val bills: @Composable () -> Unit = {},
+    val bill: @Composable (id: String) -> Unit = {},
+    val billEdit: @Composable (args: Map<String, String>) -> Unit = {}
 )
 
 private const val ANIM_MS = 250
@@ -124,6 +129,14 @@ fun AppNav(destinations: Destinations, pendingCount: Int = 0) {
                     destinations.debtEntry(e.arg("person"), e.arg("id"), e.arg("kind"))
                 }
                 stack(Routes.BACKUP, "Backup & restore", navigator) { destinations.backup() }
+                stack(Routes.CARD_PAYMENTS, "Card payments", navigator) { destinations.cardPayments() }
+                stack(Routes.CARD_PAYMENT_NEW, "Record card payment", navigator) { destinations.cardPaymentNew() }
+                stack(Routes.BILLS, "Bills & EMIs", navigator) { destinations.bills() }
+                stack(Routes.BILL, "Bill", navigator, args = listOf("id")) { e -> destinations.bill(e.arg("id")) }
+                val billArgs = listOf("id", "name", "amount", "currency", "day", "category", "merchant")
+                stack(Routes.BILL_EDIT, "Bill or EMI", navigator, args = billArgs) { e ->
+                    destinations.billEdit(billArgs.associateWith { e.arg(it) })
+                }
             }
         }
     }

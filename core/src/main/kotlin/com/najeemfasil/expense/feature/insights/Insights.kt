@@ -25,10 +25,10 @@ data class InsightTx(
     val isRefund: Boolean get() = direction == Direction.CREDIT && categoryId == REFUND_CATEGORY
 }
 
-/** Every accepted transaction, oldest first. */
+/** Every accepted, not ignored transaction, oldest first. */
 fun listInsightTxs(db: Conn): List<InsightTx> = db.query(
     """SELECT id, amount_minor, currency, direction, category_id, merchant, occurred_at
-       FROM transactions WHERE status = 'accepted' ORDER BY occurred_at"""
+       FROM transactions WHERE status = 'accepted' AND excluded = 0 ORDER BY occurred_at"""
 ) {
     InsightTx(
         id = it.text(0),

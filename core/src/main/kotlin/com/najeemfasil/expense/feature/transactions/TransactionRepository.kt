@@ -45,12 +45,16 @@ data class Transaction(
     val categoryId: String?,
     val duplicateOfId: String?,
     val smsSender: String?,
-    val smsBody: String?
+    val smsBody: String?,
+    /** Ignored by the user: left out of totals, the month's list and Insights. */
+    val excluded: Boolean = false,
+    /** For a credit card bill payment: the card it paid. */
+    val paidCardId: String? = null
 )
 
 private const val COLUMNS =
     "id, status, source, amount_minor, currency, direction, merchant, note, occurred_at, account_id, account_hint, " +
-        "category_id, duplicate_of_id, sms_sender, sms_body"
+        "category_id, duplicate_of_id, sms_sender, sms_body, excluded, paid_card_id"
 
 private fun transaction(r: Row) = Transaction(
     id = r.text(0),
@@ -67,7 +71,9 @@ private fun transaction(r: Row) = Transaction(
     categoryId = r.textOrNull(11),
     duplicateOfId = r.textOrNull(12),
     smsSender = r.textOrNull(13),
-    smsBody = r.textOrNull(14)
+    smsBody = r.textOrNull(14),
+    excluded = r.long(15) != 0L,
+    paidCardId = r.textOrNull(16)
 )
 
 fun getTransaction(db: Conn, id: String): Transaction? = db.first("SELECT $COLUMNS FROM transactions WHERE id = ?", id, map = ::transaction)
@@ -76,10 +82,10 @@ fun listPending(db: Conn): List<Transaction> = db.query("SELECT $COLUMNS FROM tr
 
 fun countPending(db: Conn): Int = db.first("SELECT COUNT(*) FROM transactions WHERE status = 'pending'") { it.int(0) } ?: 0
 
-/** Accepted transactions in [from, to). */
-fun listAccepted(db: Conn, from: Long, to: Long, limit: Int = 1000): List<Transaction> = db.query(
+/** Accepted transactions in [from, to). Ignored ones only when [includeExcluded]. */
+fun listAccepted(db: Conn, from: Long, to: Long, limit: Int = 1000, includeExcluded: Boolean = false): List<Transaction> = db.query(
     """SELECT $COLUMNS FROM transactions
-       WHERE status = 'accepted' AND occurred_at >= ? AND occurred_at < ?
+       WHERE status = 'accepted' ${if (includeExcluded) "" else "AND excluded = 0"} AND occurred_at >= ? AND occurred_at < ?
        ORDER BY occurred_at DESC LIMIT ?""",
     from,
     to,
@@ -87,11 +93,11 @@ fun listAccepted(db: Conn, from: Long, to: Long, limit: Int = 1000): List<Transa
     map = ::transaction
 )
 
-/** Amount fields of every accepted transaction in [from, to), for totals (no row limit). */
+/** Amount fields of every accepted, not ignored transaction in [from, to), for totals (no row limit). */
 fun listSummaryInputs(db: Conn, from: Long, to: Long): List<SummaryInput> = db.query(
     """SELECT amount_minor, currency, direction, category_id, occurred_at
        FROM transactions
-       WHERE status = 'accepted' AND occurred_at >= ? AND occurred_at < ?""",
+       WHERE status = 'accepted' AND excluded = 0 AND occurred_at >= ? AND occurred_at < ?""",
     from,
     to
 ) {
@@ -129,7 +135,9 @@ data class TransactionInput(
     val note: String?,
     val occurredAt: Long,
     val accountId: String?,
-    val categoryId: String?
+    val categoryId: String?,
+    val excluded: Boolean = false,
+    val paidCardId: String? = null
 )
 
 /**
@@ -143,17 +151,18 @@ fun saveTransaction(db: Conn, id: String?, input: TransactionInput): String {
         if (id != null) {
             db.run(
                 """UPDATE transactions SET status = 'accepted', amount_minor = ?, currency = ?, direction = ?, merchant = ?,
-                     note = ?, occurred_at = ?, account_id = ?, category_id = ?, updated_at = ? WHERE id = ?""",
+                     note = ?, occurred_at = ?, account_id = ?, category_id = ?, excluded = ?, paid_card_id = ?, updated_at = ?
+                   WHERE id = ?""",
                 input.amountMinor, input.currency.name, input.direction.db, input.merchant, input.note,
-                input.occurredAt, input.accountId, input.categoryId, now, id
+                input.occurredAt, input.accountId, input.categoryId, if (input.excluded) 1 else 0, input.paidCardId, now, id
             )
         } else {
             db.run(
                 """INSERT INTO transactions (id, status, source, amount_minor, currency, direction, merchant, note,
-                     occurred_at, account_id, category_id, created_at, updated_at)
-                   VALUES (?, 'accepted', 'manual', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                     occurred_at, account_id, category_id, excluded, paid_card_id, created_at, updated_at)
+                   VALUES (?, 'accepted', 'manual', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 txId, input.amountMinor, input.currency.name, input.direction.db, input.merchant, input.note,
-                input.occurredAt, input.accountId, input.categoryId, now, now
+                input.occurredAt, input.accountId, input.categoryId, if (input.excluded) 1 else 0, input.paidCardId, now, now
             )
         }
         learnRule(db, input.merchant, input.categoryId)
@@ -196,6 +205,16 @@ fun approveAllPending(db: Conn, includeDuplicates: Boolean): Int {
         learnFrom(db, where, emptyList())
         db.run("UPDATE transactions SET status = 'accepted', updated_at = ? WHERE $where", System.currentTimeMillis())
     }
+}
+
+/** Ignores a transaction (left out of totals, lists and Insights) or brings it back. */
+fun setExcluded(db: Conn, id: String, excluded: Boolean) {
+    db.run("UPDATE transactions SET excluded = ?, updated_at = ? WHERE id = ?", if (excluded) 1 else 0, System.currentTimeMillis(), id)
+}
+
+/** Links a credit card bill payment to the card it paid (null to unlink). */
+fun setPaidCard(db: Conn, id: String, cardId: String?) {
+    db.run("UPDATE transactions SET paid_card_id = ?, updated_at = ? WHERE id = ?", cardId, System.currentTimeMillis(), id)
 }
 
 /** Manual entries are deleted; SMS entries become rejected so the SMS isn't re-imported. */

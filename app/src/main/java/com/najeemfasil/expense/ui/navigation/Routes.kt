@@ -26,6 +26,25 @@ object Routes {
     const val DEBT_PERSON = "debts/person?id={id}"
     const val DEBT_ENTRY = "debts/entry?person={person}&id={id}&kind={kind}"
     const val BACKUP = "backup"
+    const val CARD_PAYMENTS = "card-payments"
+    const val CARD_PAYMENT_NEW = "card-payments/new"
+    const val BILLS = "bills"
+    const val BILL = "bill/{id}"
+    const val BILL_EDIT = "bills/edit?id={id}&name={name}&amount={amount}&currency={currency}&day={day}&category={category}&merchant={merchant}"
+
+    fun bill(id: String) = "bill/${Uri.encode(id)}"
+
+    /** Edit bill [id], or start a new one (id empty) with the given values. */
+    fun billEdit(
+        id: String = "",
+        name: String = "",
+        amount: String = "",
+        currency: String = "",
+        day: String = "",
+        category: String = "",
+        merchant: String = ""
+    ) = "bills/edit?id=${Uri.encode(id)}&name=${Uri.encode(name)}&amount=${Uri.encode(amount)}&currency=${Uri.encode(currency)}" +
+        "&day=${Uri.encode(day)}&category=${Uri.encode(category)}&merchant=${Uri.encode(merchant)}"
 
     /** `id` is a transaction id, or "new" to create one. */
     fun transaction(id: String) = "transaction/${Uri.encode(id)}"

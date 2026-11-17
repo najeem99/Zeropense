@@ -29,6 +29,7 @@ import com.najeemfasil.expense.core.toDateInput
 import com.najeemfasil.expense.data.LocalDb
 import com.najeemfasil.expense.data.rememberDbQuery
 import com.najeemfasil.expense.feature.accounts.accountLabel
+import com.najeemfasil.expense.feature.cards.creditCards
 import com.najeemfasil.expense.feature.categories.CARD_PAYMENT_CATEGORY
 import com.najeemfasil.expense.feature.categories.CategoryKind
 import com.najeemfasil.expense.feature.categories.REFUND_CATEGORY
@@ -39,6 +40,7 @@ import com.najeemfasil.expense.ui.components.Body
 import com.najeemfasil.expense.ui.components.Button
 import com.najeemfasil.expense.ui.components.ButtonVariant
 import com.najeemfasil.expense.ui.components.Card
+import com.najeemfasil.expense.ui.components.CheckRow
 import com.najeemfasil.expense.ui.components.Chip
 import com.najeemfasil.expense.ui.components.ChipRow
 import com.najeemfasil.expense.ui.components.Field
@@ -65,7 +67,9 @@ private data class Form(
     val date: String,
     val accountId: String?,
     val categoryId: String?,
-    val note: String
+    val note: String,
+    val excluded: Boolean = false,
+    val paidCardId: String? = null
 )
 
 private fun initialForm(tx: Transaction?): Form = if (tx == null) {
@@ -79,7 +83,9 @@ private fun initialForm(tx: Transaction?): Form = if (tx == null) {
         date = toDateInput(tx.occurredAt),
         accountId = tx.accountId,
         categoryId = tx.categoryId,
-        note = tx.note.orEmpty()
+        note = tx.note.orEmpty(),
+        excluded = tx.excluded,
+        paidCardId = tx.paidCardId
     )
 }
 
@@ -149,7 +155,9 @@ private fun TransactionForm(tx: Transaction?, lookups: Lookups) {
             note = f.note.jsTrim().ifEmpty { null },
             occurredAt = occurredAt,
             accountId = f.accountId,
-            categoryId = f.categoryId
+            categoryId = f.categoryId,
+            excluded = f.excluded,
+            paidCardId = if (f.categoryId == CARD_PAYMENT_CATEGORY) f.paidCardId else null
         )
         scope.launch {
             db.write { saveTransaction(it, tx?.id, input) }
@@ -225,6 +233,24 @@ private fun TransactionForm(tx: Transaction?, lookups: Lookups) {
             }
         }
 
+        if (form.categoryId == CARD_PAYMENT_CATEGORY) {
+            val cards = creditCards(lookups.accounts).filter { it.id != form.accountId }
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                Label("Card paid")
+                if (cards.isEmpty()) {
+                    Body("Add your credit cards in More › Cards & accounts to see payments per card.", muted = true, fontSize = 13.sp)
+                } else {
+                    ChipRow {
+                        Chip("Not set", selected = form.paidCardId == null) { form = form.copy(paidCardId = null) }
+                        for (card in cards) {
+                            Chip(accountLabel(card), selected = form.paidCardId == card.id) { form = form.copy(paidCardId = card.id) }
+                        }
+                    }
+                    Body("A card bill payment isn’t spending: the purchases on the card already count.", muted = true, fontSize = 13.sp)
+                }
+            }
+        }
+
         Field(
             "Date",
             form.date,
@@ -233,6 +259,13 @@ private fun TransactionForm(tx: Transaction?, lookups: Lookups) {
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None)
         )
         Field("Note", form.note, { form = form.copy(note = it) }, placeholder = "Optional")
+
+        CheckRow(
+            checked = form.excluded,
+            onClick = { form = form.copy(excluded = !form.excluded) },
+            title = "Ignore this transaction",
+            subtitle = "Leave it out of totals, the transaction list and Insights, e.g. money passed on for a friend."
+        )
 
         val smsBody = tx?.smsBody
         if (!smsBody.isNullOrEmpty()) {

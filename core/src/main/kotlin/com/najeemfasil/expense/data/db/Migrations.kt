@@ -179,7 +179,38 @@ private fun backfillTypeCategories(db: Conn) {
     }
 }
 
-const val LATEST_VERSION = 8
+/**
+ * Ignored transactions, credit card bill payments and bills / EMIs.
+ * `excluded` = 1 keeps a transaction out of totals, lists and Insights (e.g. money passed on for a friend).
+ * `paid_card_id` = the credit card a "Credit card payment" transaction settles.
+ */
+private const val V9 = """
+ALTER TABLE transactions ADD COLUMN excluded INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE transactions ADD COLUMN paid_card_id TEXT REFERENCES accounts(id) ON DELETE SET NULL;
+CREATE TABLE bills (
+  id TEXT PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL,
+  kind TEXT NOT NULL,                    -- bill | emi
+  amount_minor INTEGER NOT NULL,
+  currency TEXT NOT NULL,
+  due_day INTEGER NOT NULL,              -- 1..31; a short month uses its last day
+  category_id TEXT REFERENCES categories(id) ON DELETE SET NULL,
+  merchant_key TEXT,                     -- payments to this merchant mark the month paid
+  start_month INTEGER NOT NULL,          -- first month tracked (start of month, local time)
+  installments INTEGER,                  -- EMI: total number of instalments; null for a bill
+  paid_before INTEGER NOT NULL DEFAULT 0,-- EMI: instalments paid before start_month
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE bill_payments (             -- months marked paid by hand
+  bill_id TEXT NOT NULL REFERENCES bills(id) ON DELETE CASCADE,
+  month INTEGER NOT NULL,                -- start of the month this pays
+  transaction_id TEXT REFERENCES transactions(id) ON DELETE SET NULL,
+  paid_at INTEGER NOT NULL,
+  PRIMARY KEY (bill_id, month)
+);
+"""
+
+const val LATEST_VERSION = 9
 
 fun userVersion(db: Conn): Int = db.first("PRAGMA user_version") { it.int(0) } ?: 0
 
@@ -207,6 +238,7 @@ fun migrate(db: Conn, upTo: Int = LATEST_VERSION) {
             db.script(V8)
             backfillTypeCategories(db)
         }
+        if (version < 9 && upTo >= 9) db.script(V9)
     }
     db.run("PRAGMA user_version = $upTo")
 }

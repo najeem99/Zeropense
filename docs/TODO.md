@@ -216,6 +216,23 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - [x] Transaction screen offers “Credit card payment” for money in too (the card side of the payment).
 - **Done when:** core tests pass; release APK builds.
 
+## F24. Ignore a transaction, card payments per card, bills and EMIs (added 2026-11-17)
+- [x] Schema v9: `transactions.excluded` (ignored), `transactions.paid_card_id` (card a card payment settles),
+  tables `bills` and `bill_payments` (months marked paid by hand). Covered by the F22 backup (it copies every table).
+- [x] Ignore: “Ignore this transaction” on the transaction screen (e.g. money a friend sent that you paid out for them).
+  Ignored ones are left out of Overview, Insights, card payments and bill matching, and sit in a collapsed
+  “Ignored (n)” card at the bottom of the month in Transactions, where they can be counted again.
+- [x] Card payments (More › Card payments): per credit card, what was paid so far, how many payments and the last date,
+  built on the F23 “Credit card payment” category. The card is the one picked on the transaction (“Card paid”), else the
+  card itself for its own “payment received” SMS, else the only card whose last 4 digits the SMS names. A bank debit and
+  the card's credit for the same amount within 3 days count once. “Record a payment” adds one by hand.
+- [x] Bills & EMIs (More › Bills & EMIs, and “Bills to pay” on the Overview for the running month): monthly amount,
+  due day (last day in short months), optional merchant. A payment to that merchant in the month marks it paid
+  (among bills with the same merchant, the closest amount wins); otherwise pick one of the month's payments or mark
+  it “Paid, not in the app”. An EMI has total instalments and instalments paid before tracking began, and shows paid so
+  far, left (amount and count) and the last instalment month. Insights › Repeat payments rows open a prefilled bill.
+- **Not verified on a phone.** Core tests cover the logic; the screen tests run in CI.
+
 ---
 
 ## Coverage check: every existing file → TODO item

@@ -10,6 +10,13 @@ import com.najeemfasil.expense.data.rememberDbQuery
 import com.najeemfasil.expense.feature.accounts.AccountNewScreen
 import com.najeemfasil.expense.feature.accounts.AccountsScreen
 import com.najeemfasil.expense.feature.backup.BackupScreen
+import com.najeemfasil.expense.feature.bills.BillEditScreen
+import com.najeemfasil.expense.feature.bills.BillPrefill
+import com.najeemfasil.expense.feature.bills.BillScreen
+import com.najeemfasil.expense.feature.bills.BillsDueCard
+import com.najeemfasil.expense.feature.bills.BillsScreen
+import com.najeemfasil.expense.feature.cards.CardPaymentNewScreen
+import com.najeemfasil.expense.feature.cards.CardPaymentsScreen
 import com.najeemfasil.expense.feature.categories.CategoriesScreen
 import com.najeemfasil.expense.feature.dashboard.OverviewScreen
 import com.najeemfasil.expense.feature.debts.DebtEntryScreen
@@ -34,7 +41,7 @@ import com.najeemfasil.expense.ui.navigation.Destinations
 
 /** The real screens. Destinations still to be built show a placeholder. */
 fun appDestinations() = Destinations(
-    overview = { OverviewScreen(scanCard = { ScanCard() }) },
+    overview = { OverviewScreen(scanCard = { ScanCard() }, billsCard = { BillsDueCard() }) },
     insights = { InsightsScreen() },
     review = { ReviewScreen() },
     transactions = { TransactionsScreen() },
@@ -53,7 +60,17 @@ fun appDestinations() = Destinations(
     debts = { DebtsScreen() },
     debtPerson = { id -> DebtPersonScreen(id) },
     debtEntry = { person, id, kind -> DebtEntryScreen(person, id, kind) },
-    backup = { BackupScreen() }
+    backup = { BackupScreen() },
+    cardPayments = { CardPaymentsScreen() },
+    cardPaymentNew = { CardPaymentNewScreen() },
+    bills = { BillsScreen() },
+    bill = { id -> BillScreen(id) },
+    billEdit = { a ->
+        BillEditScreen(
+            a["id"].orEmpty(),
+            BillPrefill(a["name"].orEmpty(), a["amount"].orEmpty(), a["currency"].orEmpty(), a["day"].orEmpty(), a["category"].orEmpty(), a["merchant"].orEmpty())
+        )
+    }
 )
 
 @Composable

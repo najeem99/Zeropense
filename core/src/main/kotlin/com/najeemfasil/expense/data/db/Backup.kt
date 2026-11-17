@@ -25,7 +25,7 @@ private fun tables(db: Conn, schema: String): List<String> = db.query("SELECT na
 private fun columns(db: Conn, schema: String, table: String): List<String> = db.query("PRAGMA $schema.table_info(\"$table\")") { it.text(1) }
 
 /** True when the app holds anything the user entered or imported. */
-fun hasUserData(db: Conn): Boolean = listOf("transactions", "accounts", "debt_people", "sms_rules").any { t ->
+fun hasUserData(db: Conn): Boolean = listOf("transactions", "accounts", "debt_people", "sms_rules", "bills").any { t ->
     (db.first("SELECT EXISTS (SELECT 1 FROM $t)") { it.int(0) } ?: 0) == 1
 }
 

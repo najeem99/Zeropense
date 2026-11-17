@@ -28,6 +28,8 @@ private val LINKS = listOf(
     Triple("Debts", "Money you gave or got from people in your contacts", Routes.DEBTS),
     Triple("SMS configuration", "Choose which amount to take from a bank SMS", Routes.PARSERS),
     Triple("Cards & accounts", "Credit and debit cards, found from SMS by last 4 digits", Routes.ACCOUNTS),
+    Triple("Card payments", "What you’ve paid to each credit card", Routes.CARD_PAYMENTS),
+    Triple("Bills & EMIs", "Rent, utilities and loans: what’s due, paid and left", Routes.BILLS),
     Triple("Paste an SMS", "Test how a single message is read", Routes.IMPORT_SMS),
     Triple("Categories", "Categories and remembered merchants", Routes.CATEGORIES),
     Triple("Backup & restore", "Keep your data when you reinstall or change phones", Routes.BACKUP)

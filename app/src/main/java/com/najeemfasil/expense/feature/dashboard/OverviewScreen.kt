@@ -59,7 +59,11 @@ private class OverviewData(
  * switcher; [now] is injectable for tests.
  */
 @Composable
-fun OverviewScreen(now: () -> Long = System::currentTimeMillis, scanCard: @Composable () -> Unit = {}) {
+fun OverviewScreen(
+    now: () -> Long = System::currentTimeMillis,
+    scanCard: @Composable () -> Unit = {},
+    billsCard: @Composable () -> Unit = {}
+) {
     val nav = LocalNavigator.current
     var month by rememberSaveable { mutableStateOf(startOfMonth(now())) }
     var allTime by rememberSaveable { mutableStateOf(false) }
@@ -98,6 +102,8 @@ fun OverviewScreen(now: () -> Long = System::currentTimeMillis, scanCard: @Compo
                 Button("Review now", { nav.goToTab(Tab.Review) })
             }
         }
+        // Bills still to pay this month; only on the running month.
+        if (!allTime && month == startOfMonth(now())) billsCard()
 
         if (d != null && lookups != null) {
             if (d.summaries.isEmpty()) {

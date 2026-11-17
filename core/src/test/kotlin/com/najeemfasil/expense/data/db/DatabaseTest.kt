@@ -39,7 +39,7 @@ class DatabaseTest {
         assertEquals(
             setOf(
                 "accounts", "categories", "transactions", "merchant_rules", "custom_parsers", "unread_sms", "settings", "sms_rules",
-                "debt_people", "debts"
+                "debt_people", "debts", "bills", "bill_payments"
             ),
             db.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'") { it.text(0) }.toSet()
         )

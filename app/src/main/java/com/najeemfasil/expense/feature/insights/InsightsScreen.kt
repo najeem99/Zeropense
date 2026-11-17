@@ -1,5 +1,6 @@
 package com.najeemfasil.expense.feature.insights
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import com.najeemfasil.expense.core.formatDate
 import com.najeemfasil.expense.core.formatDayLabel
 import com.najeemfasil.expense.core.formatMoney
 import com.najeemfasil.expense.core.formatMonth
+import com.najeemfasil.expense.core.minorToInput
 import com.najeemfasil.expense.core.startOfDay
 import com.najeemfasil.expense.data.rememberDbQuery
 import com.najeemfasil.expense.feature.categories.categoryLook
@@ -43,6 +45,8 @@ import com.najeemfasil.expense.ui.components.Empty
 import com.najeemfasil.expense.ui.components.Label
 import com.najeemfasil.expense.ui.components.MonthSwitcher
 import com.najeemfasil.expense.ui.components.Screen
+import com.najeemfasil.expense.ui.navigation.LocalNavigator
+import com.najeemfasil.expense.ui.navigation.Routes
 import com.najeemfasil.expense.ui.theme.Spacing
 import com.najeemfasil.expense.ui.theme.colors
 
@@ -422,12 +426,27 @@ private fun RecurringCard(f: Focus, nameOf: (String?) -> String) {
     val rows = remember(f) { findRecurring(spending(f.txs, f.currency, null), f.now) }
     if (rows.isEmpty()) return
     val c = colors
+    val nav = LocalNavigator.current
     Card {
         Label("Repeat payments")
         Body("About ${formatMoney(rows.sumOf { it.typicalMinor }, f.currency)} a month goes to payments that repeat.", muted = true, fontSize = 13.sp)
+        Body("Tap one to track it in Bills & EMIs.", muted = true, fontSize = 13.sp)
         for (r in rows) {
+            val track = {
+                val day = java.util.Calendar.getInstance().apply { timeInMillis = r.lastAt }.get(java.util.Calendar.DAY_OF_MONTH)
+                nav.push(
+                    Routes.billEdit(
+                        name = r.name,
+                        amount = minorToInput(r.typicalMinor),
+                        currency = f.currency.name,
+                        day = day.toString(),
+                        category = r.categoryId.orEmpty(),
+                        merchant = r.name
+                    )
+                )
+            }
             Row(
-                Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                Modifier.fillMaxWidth().clickable(onClick = track).padding(vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
                 verticalAlignment = Alignment.CenterVertically
             ) {
