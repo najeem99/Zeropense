@@ -49,7 +49,7 @@ class AppShellTest {
                         for ((route, title) in routes) Button("Open $title", { nav.push(route) })
                     }
                 },
-                review = d.review, transactions = d.transactions, more = d.more, transaction = d.transaction,
+                insights = d.insights, review = d.review, transactions = d.transactions, more = d.more, transaction = d.transaction,
                 importSms = d.importSms, smsSetup = d.smsSetup, accounts = d.accounts,
                 accountNew = { digits, currency, sender -> Screen { Body("$digits $currency $sender") } },
                 categories = d.categories, parsers = d.parsers,
@@ -68,7 +68,7 @@ class AppShellTest {
             rule.onNodeWithContentDescription("Back").performClick()
             rule.onNodeWithText("Open $title").assertIsDisplayed()
         }
-        for (tab in listOf("Review", "Transactions", "More")) {
+        for (tab in listOf("Insights", "Review", "Transactions", "More")) {
             rule.onNodeWithText(tab).performClick()
             rule.waitForIdle()
         }

@@ -38,7 +38,7 @@ fun ComposeRule.setScreen(
                 val d = com.najeemfasil.expense.ui.navigation.placeholderDestinations()
                 com.najeemfasil.expense.ui.navigation.AppNav(
                     com.najeemfasil.expense.ui.navigation.Destinations(
-                        overview = content, review = d.review, transactions = d.transactions, more = d.more,
+                        overview = content, insights = d.insights, review = d.review, transactions = d.transactions, more = d.more,
                         transaction = d.transaction, importSms = d.importSms, smsSetup = d.smsSetup,
                         accounts = d.accounts, accountNew = d.accountNew, categories = d.categories,
                         parsers = d.parsers, parserNew = d.parserNew

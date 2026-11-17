@@ -614,6 +614,21 @@ At most 5 slices: if more than 5 categories, show the top 4 and fold the rest in
 `•••`). Arcs drawn end to end from 12 o'clock clockwise with a 2 px gap between slices when there is more than one.
 Size 168 dp, stroke 22 dp.
 
+### 11.4 Insights (`feature/insights`)
+All figures are money out (debits) of one currency; AED and INR are never added. A category filter (one category,
+*Uncategorised*, or all) applies to every figure. Weeks start on Monday.
+- **Period stats**: total, payments, average per day over the days so far, no-spend days and longest run, largest
+  payment, busiest day. While a period is still running it is compared with the previous period **up to the same
+  day** (1–17 Nov against 1–17 Oct), else with the whole previous period. Refunds in the period are mentioned, not
+  subtracted, when all categories are shown.
+- **Forecast** (running month, from day 2): spent so far + the average of what the same remaining days cost in up to
+  three earlier months (so a rent on the 1st is not repeated); with no earlier month, the pace so far.
+- **Repeat payments**: same merchant (trimmed, case-insensitive) in 3+ different months of the last ~6, amounts within
+  20% of the usual one, about a month apart (median gap 25–36 days). Next date = last + that gap.
+- **Highlights**: forecast; biggest category rise and fall against the previous period (finished periods only); the
+  top category's share; no-spend days; busiest day vs the daily average; the most visited place; the largest
+  payment; a weekday that costs 1.5× the others over the last 13 weeks.
+
 ---
 
 ## 12. Screens
@@ -622,7 +637,7 @@ Navigation: a root stack holding the **tab shell** (no header) and these stack s
 
 | Route (Expo) | Header title | Presentation |
 |---|---|---|
-| `(tabs)` | none | Bottom tabs: **Overview**, **Review** (badge = pending count when > 0), **Transactions**, **More**. Material icons `donut_large`, `inbox`, `receipt_long`, `more_horiz`. |
+| `(tabs)` | none | Bottom tabs: **Overview**, **Insights** (§12.15), **Review** (badge = pending count when > 0), **Transactions**, **More**. Material icons `donut_large`, `inbox`, `receipt_long`, `more_horiz`. |
 | `transaction/[id]` | Transaction | Modal. `id = "new"` creates. |
 | `import-sms` | Paste an SMS | |
 | `sms-setup` | Set up bank SMS | |
@@ -869,6 +884,19 @@ common wording"*); see §13 Q1.
 | warningBg | `#FFF4E0` | `#3A2A0E` |
 
 Spacing 4/8/12/16/24; radius 8/12/16/pill.
+
+### 12.15 Insights tab
+- Title **Insights**. Empty: *"No spending yet"*.
+- Currency chips (only when both have spending), a scrolling row of category chips (**All categories**, then each
+  category with spending, largest first), **Day / Week / Month / Year** chips (default Month) and a switcher.
+- **Total card**: amount, ▲/▼ % against the previous period (§11.4), per day, payments, largest, refunds note.
+- **Trend**: bars for the last 14 days / 12 weeks / 12 months / 6 years ending at the selected one; tap a bar to go there.
+- Day: that day's expenses. Week: Mon–Sun bars, tap a day for its expenses. Month: **calendar** heatmap (day number,
+  compact amount, today outlined), tap a day for its expenses, then **Daily expenses** (each day with spending, tap to
+  open that day). Year: **Month by month**, tap to open that month.
+- **Highlights**, then **By category** with change against the previous period (tap to filter) or, with a category
+  selected, **Top places**; **Your week** (average per weekday, last 13 weeks); **Repeat payments** (all categories).
+- Overview has a button **Open Insights: calendar, trends and more**.
 
 ---
 

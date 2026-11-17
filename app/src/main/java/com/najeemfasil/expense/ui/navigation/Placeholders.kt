@@ -12,6 +12,7 @@ fun PlaceholderScreen(title: String? = null, text: String = "Coming in a later s
 /** Every destination as a placeholder; features replace them one by one. */
 fun placeholderDestinations() = Destinations(
     overview = { PlaceholderScreen("Overview") },
+    insights = { PlaceholderScreen("Insights") },
     review = { PlaceholderScreen("Review") },
     transactions = { PlaceholderScreen("Transactions") },
     more = { PlaceholderScreen("More") },

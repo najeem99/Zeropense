@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
 import androidx.compose.material.icons.outlined.DonutLarge
 import androidx.compose.material.icons.outlined.Inbox
+import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -52,6 +53,7 @@ import com.najeemfasil.expense.ui.theme.colors
 /** What each destination shows. Features fill these in one by one. */
 class Destinations(
     val overview: @Composable () -> Unit,
+    val insights: @Composable () -> Unit,
     val review: @Composable () -> Unit,
     val transactions: @Composable () -> Unit,
     val more: @Composable () -> Unit,
@@ -163,6 +165,7 @@ private fun StackScreen(title: String, navigator: Navigator, content: @Composabl
 private val TAB_ICONS: Map<Tab, ImageVector>
     get() = mapOf(
         Tab.Overview to Icons.Outlined.DonutLarge,
+        Tab.Insights to Icons.Outlined.Insights,
         Tab.Review to Icons.Outlined.Inbox,
         Tab.Transactions to Icons.AutoMirrored.Outlined.ReceiptLong,
         Tab.More to Icons.Outlined.MoreHoriz
@@ -212,6 +215,7 @@ private fun TabShell(navigator: Navigator, destinations: Destinations, pendingCo
             holder.SaveableStateProvider(navigator.tab.name) {
                 when (navigator.tab) {
                     Tab.Overview -> destinations.overview()
+                    Tab.Insights -> destinations.insights()
                     Tab.Review -> destinations.review()
                     Tab.Transactions -> destinations.transactions()
                     Tab.More -> destinations.more()

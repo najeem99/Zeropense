@@ -11,6 +11,7 @@ import com.najeemfasil.expense.feature.accounts.AccountNewScreen
 import com.najeemfasil.expense.feature.accounts.AccountsScreen
 import com.najeemfasil.expense.feature.categories.CategoriesScreen
 import com.najeemfasil.expense.feature.dashboard.OverviewScreen
+import com.najeemfasil.expense.feature.insights.InsightsScreen
 import com.najeemfasil.expense.feature.more.MoreScreen
 import com.najeemfasil.expense.feature.review.ReviewScreen
 import com.najeemfasil.expense.feature.sms.AutoInboxScan
@@ -30,6 +31,7 @@ import com.najeemfasil.expense.ui.navigation.Destinations
 /** The real screens. Destinations still to be built show a placeholder. */
 fun appDestinations() = Destinations(
     overview = { OverviewScreen(scanCard = { ScanCard() }) },
+    insights = { InsightsScreen() },
     review = { ReviewScreen() },
     transactions = { TransactionsScreen() },
     more = { MoreScreen() },

@@ -112,6 +112,7 @@ fun OverviewScreen(now: () -> Long = System::currentTimeMillis, scanCard: @Compo
                 }
             } else {
                 for ((summary, daily) in d.summaries) SummaryCard(summary, daily, d.dayFrom, lookups)
+                Button("Open Insights: calendar, trends and more", { nav.selectTab(Tab.Insights) }, variant = ButtonVariant.Secondary)
                 Card {
                     Label("Recent")
                     for (tx in d.recent) TransactionRow(tx, lookups)

@@ -5,6 +5,7 @@ import android.net.Uri
 /** Bottom tabs, in order. */
 enum class Tab(val label: String) {
     Overview("Overview"),
+    Insights("Insights"),
     Review("Review"),
     Transactions("Transactions"),
     More("More")

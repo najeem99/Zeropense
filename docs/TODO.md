@@ -181,6 +181,12 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
 - [x] Release APK, replace `apk/Zeropense.apk`, update README (build steps, stack, checks).
 - **Done when:** the release APK passes the regression pass on a real phone.
 
+## F21. Insights tab (new, after the rebuild)
+- [x] Analytics engine in `:core` (`feature/insights`): periods (day, week from Monday, month, year), category filter, day totals, trends, period stats with a fair "same point last period" comparison, category changes, top merchants, weekday habits, month forecast, repeat-payment detection, plain-language highlights. (§11.4)
+- [x] **Insights tab** between Overview and Review: currency and category chips, Day / Week / Month / Year, total and comparison, trend bars, calendar heatmap with tap-a-day, daily expenses, month-by-month, highlights, by category, top places, your week, repeat payments. (§12.15)
+- [x] No schema change: reads the existing `transactions` table only.
+- **Done when:** a category can be followed by day, week, month and year, and the calendar shows each day's spending.
+
 ---
 
 ## Coverage check: every existing file → TODO item
