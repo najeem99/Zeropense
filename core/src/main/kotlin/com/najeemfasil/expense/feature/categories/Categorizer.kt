@@ -11,6 +11,24 @@ data class MerchantRule(val merchantKey: String, val categoryId: String)
  */
 const val REFUND_CATEGORY = "refund"
 
+/**
+ * Paying off a credit card bill. The purchases on the card are already tracked, so the payment
+ * (money out of the bank, and money into the card) is never spending or income.
+ */
+const val CARD_PAYMENT_CATEGORY = "card-payment"
+
+/** Cash taken out at an ATM (from a bank account or a credit card). Counted as spending. */
+const val CASH_CATEGORY = "cash"
+
+/** True when the transaction counts in Money in / Money out, charts and Insights totals. */
+fun countsInTotals(categoryId: String?): Boolean = categoryId != CARD_PAYMENT_CATEGORY
+
+/**
+ * Categories that describe the kind of transaction, read from the SMS wording, rather than the
+ * shop. They are never learned as a merchant's category.
+ */
+val TYPE_CATEGORIES = setOf(REFUND_CATEGORY, CARD_PAYMENT_CATEGORY, CASH_CATEGORY)
+
 private val NOISE_WORDS = setOf(
     "PVT", "PRIVATE", "LTD", "LIMITED", "LLC", "INC", "CO", "FZ", "FZE", "FZCO", "FZLLC",
     "INDIA", "IN", "UAE", "AE", "DUBAI", "ABU", "DHABI", "SHARJAH", "UPI", "POS", "THE"

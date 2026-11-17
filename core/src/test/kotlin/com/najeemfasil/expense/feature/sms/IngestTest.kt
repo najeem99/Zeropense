@@ -39,6 +39,12 @@ class IngestTest {
     }
 
     @Test
+    fun cardBillPaymentsWinOverTheLearnedMerchant() {
+        val body = HDFC.replace("To SWIGGY", "To SWIGGY credit card bill payment")
+        assertEquals("card-payment", draft(processSms(RawSms("VM-HDFCBK", body, t0), ctx())).categoryId)
+    }
+
+    @Test
     fun matchesTheSameBankUnderAnotherOperatorPrefix() {
         assertEquals(7500L, draft(processSms(RawSms("AD-HDFCBK-S", HDFC.replace("500.00", "75.00"), t0), ctx())).amountMinor)
     }

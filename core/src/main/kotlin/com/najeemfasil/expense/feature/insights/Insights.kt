@@ -7,6 +7,7 @@ import com.najeemfasil.expense.core.jsTrim
 import com.najeemfasil.expense.core.startOfDay
 import com.najeemfasil.expense.data.db.Conn
 import com.najeemfasil.expense.feature.categories.REFUND_CATEGORY
+import com.najeemfasil.expense.feature.categories.countsInTotals
 import java.util.Locale
 import kotlin.math.floor
 
@@ -45,17 +46,23 @@ const val UNCATEGORISED = "__none__"
 
 fun matchesCategory(filter: String?, categoryId: String?): Boolean = filter == null || (filter == UNCATEGORISED && categoryId == null) || filter == categoryId
 
-/** The money-out transactions of one currency and category filter. Every figure in Insights starts here. */
-fun spending(txs: List<InsightTx>, currency: Currency, filter: String?): List<InsightTx> = txs.filter { it.isSpend && it.currency == currency && matchesCategory(filter, it.categoryId) }
+/**
+ * The money-out transactions of one currency and category filter. Every figure in Insights starts
+ * here. Credit card bill payments are left out of "every category" (the purchases are already in),
+ * but can still be looked at on their own.
+ */
+fun spending(txs: List<InsightTx>, currency: Currency, filter: String?): List<InsightTx> = txs.filter {
+    it.isSpend && it.currency == currency && matchesCategory(filter, it.categoryId) && (filter != null || countsInTotals(it.categoryId))
+}
 
 /** Currencies that have any spending, the one with the most transactions first. */
 fun spendingCurrencies(txs: List<InsightTx>): List<Currency> = txs.filter { it.isSpend }.groupingBy { it.currency }.eachCount().entries
     .sortedWith(compareByDescending<Map.Entry<Currency, Int>> { it.value }.thenBy { it.key.name }).map { it.key }
 
-/** Category ids (null = uncategorised) with spending in [currency], largest all-time total first. */
-fun spendingCategories(txs: List<InsightTx>, currency: Currency): List<String?> = spending(txs, currency, null)
+/** Category ids (null = uncategorised) with spending in [currency], largest all-time total first; card payments last. */
+fun spendingCategories(txs: List<InsightTx>, currency: Currency): List<String?> = txs.filter { it.isSpend && it.currency == currency }
     .groupBy { it.categoryId }.mapValues { (_, v) -> v.sumOf { it.amountMinor } }.entries
-    .sortedByDescending { it.value }.map { it.key }
+    .sortedWith(compareBy<Map.Entry<String?, Long>> { !countsInTotals(it.key) }.thenByDescending { it.value }).map { it.key }
 
 private fun List<InsightTx>.within(from: Long, to: Long) = filter { it.occurredAt >= from && it.occurredAt < to }
 

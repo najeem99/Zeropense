@@ -142,6 +142,13 @@ private fun SummaryCard(s: CurrencySummary, daily: DailySpending, dayFrom: Long,
         if (s.refundMinor > 0) {
             Body("Money out is after ${formatMoney(s.refundMinor, s.currency)} of refunds.", muted = true, fontSize = 13.sp)
         }
+        if (s.cardPaymentMinor > 0) {
+            Body(
+                "${formatMoney(s.cardPaymentMinor, s.currency)} paid to credit cards is not in Money out (the card spending already is).",
+                muted = true,
+                fontSize = 13.sp
+            )
+        }
         SpendingDonut(s.topSpending, s.currency) { lookups.categoryName(it) ?: "Uncategorised" }
         DailyChart(daily, dayFrom, s.currency)
     }

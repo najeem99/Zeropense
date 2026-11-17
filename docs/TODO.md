@@ -203,6 +203,19 @@ Legend: `[ ]` todo · **Done when** = acceptance gate · *Port tests* = Jest cas
   replaces all rows). More shows “Reinstalled Zeropense?” while the database is empty.
 - **Done when:** core and screen tests pass; release APK builds.
 
+## F23. Credit card payment and cash withdrawal categories (added 2026-11-17)
+- [x] Schema v8: seeds `card-payment` “Credit card payment” 💳 and `cash` “Cash withdrawal” 🏧 (expense kind, sort 11).
+  Backfills SMS transactions already imported: uncategorised ones whose message reads like a card bill payment or an
+  ATM withdrawal, and card payments that were filed as “Money received”. Anything else the user chose is kept.
+- [x] SMS: `typeCategory` reads the wording (“credit card payment”, “payment … towards your credit card”, “CC bill”;
+  “ATM cash withdrawal”, “withdrawn at ATM”, “cash advance”) and wins over learned merchant rules. Cash only on money out.
+  Neither category is ever learned as a merchant rule (like refunds).
+- [x] Totals: a credit card bill payment is moving money to pay purchases already tracked, so it is in neither Money in
+  nor Money out, the donut, the daily chart or Insights' “All categories”. Overview says how much was paid to cards;
+  Insights can still show the category on its own. Cash withdrawals count as spending.
+- [x] Transaction screen offers “Credit card payment” for money in too (the card side of the payment).
+- **Done when:** core tests pass; release APK builds.
+
 ---
 
 ## Coverage check: every existing file → TODO item

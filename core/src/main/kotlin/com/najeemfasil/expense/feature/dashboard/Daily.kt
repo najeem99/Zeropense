@@ -4,6 +4,7 @@ import com.najeemfasil.expense.core.Currency
 import com.najeemfasil.expense.core.DAY_MS
 import com.najeemfasil.expense.core.Direction
 import com.najeemfasil.expense.core.startOfDay
+import com.najeemfasil.expense.feature.categories.countsInTotals
 import kotlin.math.floor
 
 data class Peak(val index: Int, val minor: Long)
@@ -27,7 +28,7 @@ fun dailySpending(txs: List<SummaryInput>, currency: Currency, from: Long, count
     val start = startOfDay(from)
     val days = LongArray(count)
     for (t in txs) {
-        if (t.currency != currency || t.direction != Direction.DEBIT) continue
+        if (t.currency != currency || t.direction != Direction.DEBIT || !countsInTotals(t.categoryId)) continue
         val i = dayIndex(start, t.occurredAt)
         if (i >= 0 && i < count) days[i.toInt()] += t.amountMinor
     }

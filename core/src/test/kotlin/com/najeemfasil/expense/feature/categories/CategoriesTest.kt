@@ -61,7 +61,7 @@ class CategoryRepositoryTest {
         val db = testDb()
         createCategory(db, "  Kids ", CategoryKind.EXPENSE)
         val all = listCategories(db)
-        assertEquals(19, all.size)
+        assertEquals(21, all.size)
         assertEquals("Groceries", all.first().name)
         // sort = max + 1 = 101, so it comes after every seeded expense.
         assertEquals("Kids", all.last { it.kind == CategoryKind.EXPENSE }.name)
@@ -74,6 +74,8 @@ class CategoryRepositoryTest {
         learnRule(db, "Carrefour MOE", "groceries")
         learnRule(db, "CARREFOUR moe", "shopping")
         learnRule(db, "Noon", REFUND_CATEGORY)
+        learnRule(db, "ENBD", CARD_PAYMENT_CATEGORY)
+        learnRule(db, "ATM DUBAI MALL", CASH_CATEGORY)
         learnRule(db, null, "groceries")
         learnRule(db, "Noon", null)
         learnRule(db, "7", "groceries")

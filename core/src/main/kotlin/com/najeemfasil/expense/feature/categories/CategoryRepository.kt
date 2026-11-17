@@ -33,9 +33,12 @@ fun listRules(db: Conn): List<MerchantRule> = db.query("SELECT merchant_key AS m
     MerchantRule(it.text(0), it.text(1))
 }
 
-/** Remember "this merchant → this category" for future SMS. Refunds are never learned. */
+/**
+ * Remember "this merchant → this category" for future SMS. Refunds, card payments and cash
+ * withdrawals are never learned: they come from the message wording, not the shop.
+ */
 fun learnRule(db: Conn, merchant: String?, categoryId: String?) {
-    if (merchant.isNullOrEmpty() || categoryId.isNullOrEmpty() || categoryId == REFUND_CATEGORY) return
+    if (merchant.isNullOrEmpty() || categoryId.isNullOrEmpty() || categoryId in TYPE_CATEGORIES) return
     val key = merchantKey(merchant)
     if (key.isEmpty()) return
     db.run(

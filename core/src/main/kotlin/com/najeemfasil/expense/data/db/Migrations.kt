@@ -1,5 +1,9 @@
 package com.najeemfasil.expense.data.db
 
+import com.najeemfasil.expense.core.Direction
+import com.najeemfasil.expense.feature.categories.CARD_PAYMENT_CATEGORY
+import com.najeemfasil.expense.feature.sms.typeCategory
+
 /**
  * The schema, copied from the Expo app's `src/db/migrations.ts` so a database created by that
  * app opens unchanged. Add a new step and bump [LATEST_VERSION] for schema changes; never edit
@@ -151,7 +155,31 @@ CREATE TABLE debts (
 CREATE INDEX debts_person_time ON debts (person_id, occurred_at);
 """
 
-const val LATEST_VERSION = 7
+/** Credit card bill payments (not counted as spending) and ATM cash withdrawals. */
+private const val V8 = """
+INSERT OR IGNORE INTO categories (id, name, kind, sort) VALUES ('card-payment', 'Credit card payment', 'expense', 11);
+INSERT OR IGNORE INTO categories (id, name, kind, sort) VALUES ('cash', 'Cash withdrawal', 'expense', 11);
+"""
+
+/**
+ * Puts SMS transactions already imported into the new categories when the message says so.
+ * Only uncategorised ones, plus card payments that were filed as "Money received" (they were
+ * counted as income); anything else the user chose is left alone.
+ */
+private fun backfillTypeCategories(db: Conn) {
+    val rows = db.query(
+        """SELECT id, sms_body, direction, category_id FROM transactions
+           WHERE sms_body IS NOT NULL AND (category_id IS NULL OR category_id = 'transfer-in')"""
+    ) { Triple(it.text(0), it.text(1), it.text(2)) to it.textOrNull(3) }
+    for ((row, current) in rows) {
+        val (id, body, direction) = row
+        val category = typeCategory(body, Direction.from(direction) ?: Direction.DEBIT) ?: continue
+        if (current != null && category != CARD_PAYMENT_CATEGORY) continue
+        db.run("UPDATE transactions SET category_id = ? WHERE id = ?", category, id)
+    }
+}
+
+const val LATEST_VERSION = 8
 
 fun userVersion(db: Conn): Int = db.first("PRAGMA user_version") { it.int(0) } ?: 0
 
@@ -175,6 +203,10 @@ fun migrate(db: Conn, upTo: Int = LATEST_VERSION) {
         if (version < 5 && upTo >= 5) db.script(V5)
         if (version < 6 && upTo >= 6) db.script(V6)
         if (version < 7 && upTo >= 7) db.script(V7)
+        if (version < 8 && upTo >= 8) {
+            db.script(V8)
+            backfillTypeCategories(db)
+        }
     }
     db.run("PRAGMA user_version = $upTo")
 }

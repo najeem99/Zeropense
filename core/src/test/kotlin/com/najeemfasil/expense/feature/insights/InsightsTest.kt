@@ -85,6 +85,19 @@ class InsightsTest {
     }
 
     @Test
+    fun cardPaymentsStayOutOfTotalsButCanBeViewedAlone() {
+        val txs = listOf(
+            tx(2026, 10, 2, 100000, cat = "card-payment", merchant = null),
+            tx(2026, 10, 3, 5000),
+            tx(2026, 10, 4, 20000, cat = "cash", merchant = null)
+        )
+        assertEquals(25000, spending(txs, Currency.AED, null).sumOf { it.amountMinor })
+        assertEquals(100000, spending(txs, Currency.AED, "card-payment").sumOf { it.amountMinor })
+        assertEquals(listOf("cash", "fuel", "card-payment"), spendingCategories(txs, Currency.AED))
+        assertEquals(listOf("cash", "fuel"), categoryBreakdown(txs, Currency.AED, Period.MONTH, localTime(2026, 10, 1)).map { it.categoryId })
+    }
+
+    @Test
     fun statsForARunningMonthCompareWithTheSameDaysBefore() {
         val txs = listOf(
             tx(2026, 9, 2, 10000),

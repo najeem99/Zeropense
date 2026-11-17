@@ -38,6 +38,8 @@ private val LOOKS: Map<String, Pair<String, Int?>> = mapOf(
     "travel" to ("✈️" to BLUE),
     "transfers" to ("↔️" to AQUA),
     "remittance" to ("💸" to ORANGE),
+    "card-payment" to ("💳" to VIOLET),
+    "cash" to ("🏧" to GREEN),
     "other" to ("🏷️" to null),
     "salary" to ("💼" to GREEN),
     "refund" to ("↩️" to AQUA),

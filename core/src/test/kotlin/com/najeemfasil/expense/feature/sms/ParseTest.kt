@@ -134,6 +134,25 @@ class ParseTest {
         assertNull(incomeLabel("AED 5 credited"))
     }
 
+    @Test
+    fun cardPaymentsAndCashWithdrawals() {
+        val d = Direction.DEBIT
+        val c = Direction.CREDIT
+        assertEquals("card-payment", typeCategory("Your Credit Card payment of AED 1,500.00 has been received", d))
+        assertEquals("card-payment", typeCategory("Rs 5,000.00 debited from a/c XX12 for CC bill payment", d))
+        assertEquals("card-payment", typeCategory("Payment of Rs 5,000.00 received towards your HDFC Bank Credit Card XX1234", c))
+        assertEquals("card-payment", typeCategory("AED 900 paid to your credit card ending 4321", d))
+        assertEquals("cash", typeCategory("AED 500.00 withdrawn from your account at ATM DUBAI MALL", d))
+        assertEquals("cash", typeCategory("Rs.2000 ATM Cash Withdrawal from A/c XX1234", d))
+        assertEquals("cash", typeCategory("Cash advance of AED 1,000 on Credit Card 1234", d))
+        assertEquals("cash", typeCategory("Rs 500 withdrawn using ATM card", d))
+        // Card purchases and UPI paid with a card are spending, not a bill payment.
+        assertNull(typeCategory("Purchase of AED 45 with Credit Card ending 1234 at CARREFOUR", d))
+        assertNull(typeCategory("Rs 100 debited from HDFC Bank Credit Card XX1234 towards UPI payment to SWIGGY", d))
+        assertNull(typeCategory("AED 500 deposited at CDM", c))
+        assertNull(typeCategory("AED 500 credited after ATM deposit", c))
+    }
+
     /** FSD §13 Q9: the patterns behave as they did in JavaScript. */
     @Test
     fun regexDialect() {

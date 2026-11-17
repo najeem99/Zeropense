@@ -21,17 +21,17 @@ class DatabaseTest {
     fun freshInstallHasTheSeeds() {
         val db = testDb()
         assertEquals(LATEST_VERSION, userVersion(db))
-        assertEquals(18, db.count("categories"))
+        assertEquals(20, db.count("categories"))
         assertEquals(
             listOf("ASPORA" to "remittance"),
             db.query("SELECT merchant_key, category_id FROM merchant_rules") { it.text(0) to it.text(1) }
         )
-        // ORDER BY kind, sort, name: expenses first, Remittance before Transfers (both sort 11).
+        // ORDER BY kind, sort, name: expenses first, then by name among the sort-11 ones.
         val names = db.query("SELECT name FROM categories ORDER BY kind, sort, name") { it.text(0) }
         assertEquals(
             listOf(
                 "Groceries", "Restaurant", "Transport", "Fuel", "Shopping", "Bills & Utilities", "Rent", "Health",
-                "Entertainment", "Subscriptions", "Travel", "Remittance", "Transfers", "Other", "Salary", "Refund",
+                "Entertainment", "Subscriptions", "Travel", "Cash withdrawal", "Credit card payment", "Remittance", "Transfers", "Other", "Salary", "Refund",
                 "Other income", "Money received"
             ),
             names
@@ -52,7 +52,7 @@ class DatabaseTest {
         migrate(db)
         migrate(db)
         assertEquals(LATEST_VERSION, userVersion(db))
-        assertEquals(18, db.count("categories"))
+        assertEquals(20, db.count("categories"))
         assertEquals(1, db.count("merchant_rules"))
     }
 
@@ -72,7 +72,25 @@ class DatabaseTest {
             listOf("ASPORA", "LULU"),
             db.query("SELECT merchant_key FROM merchant_rules ORDER BY merchant_key") { it.text(0) }
         )
-        assertEquals(18, db.count("categories"))
+        assertEquals(20, db.count("categories"))
+    }
+
+    @Test
+    fun filesOldCardPaymentsAndAtmWithdrawalsWhenUpgrading() {
+        val db = Db.openConnection(Db.IN_MEMORY)
+        migrate(db, upTo = 6)
+        val insert =
+            "INSERT INTO transactions (id, status, source, amount_minor, currency, direction, occurred_at, category_id, sms_body, created_at, updated_at) VALUES (?, 'accepted', 'sms', 100, 'AED', ?, 1, ?, ?, 1, 1)"
+        db.run(insert, "atm", "debit", null, "AED 500.00 withdrawn from your account at ATM DUBAI MALL")
+        db.run(insert, "paid", "debit", null, "Your credit card payment of AED 2,000.00 was successful")
+        db.run(insert, "received", "credit", "transfer-in", "Payment of AED 2,000.00 received towards your credit card ending 1234")
+        db.run(insert, "chosen", "debit", "shopping", "AED 200 withdrawn at ATM")
+        db.run(insert, "lulu", "debit", null, "AED 45 spent at LULU")
+        migrate(db)
+        assertEquals(
+            listOf("atm" to "cash", "chosen" to "shopping", "lulu" to null, "paid" to "card-payment", "received" to "card-payment"),
+            db.query("SELECT id, category_id FROM transactions ORDER BY id") { it.text(0) to it.textOrNull(1) }
+        )
     }
 
     @Test
@@ -105,7 +123,7 @@ class DatabaseTest {
         setSetting(db, SettingKey.LAST_SMS_SCAN_RUN_AT, "5")
         resetAllData(db)
         assertEquals(0, db.count("accounts"))
-        assertEquals(18, db.count("categories"))
+        assertEquals(20, db.count("categories"))
         assertEquals(listOf("ASPORA"), db.query("SELECT merchant_key FROM merchant_rules") { it.text(0) })
         assertNull(getSetting(db, SettingKey.LAST_SMS_SCAN_RUN_AT))
         assertEquals(LATEST_VERSION, userVersion(db))
@@ -152,7 +170,7 @@ class DatabaseTest {
                 error("boom")
             }
         }
-        assertEquals(18, db.count("categories"))
+        assertEquals(20, db.count("categories"))
     }
 
     @Test

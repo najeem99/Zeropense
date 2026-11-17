@@ -3,6 +3,7 @@ package com.najeemfasil.expense.feature.dashboard
 import com.najeemfasil.expense.core.Currency
 import com.najeemfasil.expense.core.Direction
 import com.najeemfasil.expense.feature.categories.REFUND_CATEGORY
+import com.najeemfasil.expense.feature.categories.countsInTotals
 
 /** The amount fields of one accepted transaction, for totals and charts. */
 data class SummaryInput(
@@ -24,7 +25,9 @@ data class CurrencySummary(
     val refundMinor: Long,
     val netMinor: Long,
     /** Spending by category, largest first. null = uncategorised. */
-    val topSpending: List<CategorySpending>
+    val topSpending: List<CategorySpending>,
+    /** Credit card bills paid in this currency. Not in Money out (the purchases already are). */
+    val cardPaymentMinor: Long = 0
 )
 
 /** Totals per currency. AED and INR are never added together. */
@@ -33,12 +36,15 @@ fun summarize(txs: List<SummaryInput>): List<CurrencySummary> {
         var income = 0L
         var out = 0L
         var refund = 0L
+        var cardPayments = 0L
         val cats = LinkedHashMap<String?, Long>()
     }
     val by = LinkedHashMap<Currency, Acc>()
     for (t in txs) {
         val s = by.getOrPut(t.currency) { Acc() }
-        if (t.direction == Direction.CREDIT && t.categoryId == REFUND_CATEGORY) {
+        if (!countsInTotals(t.categoryId)) {
+            if (t.direction == Direction.DEBIT) s.cardPayments += t.amountMinor
+        } else if (t.direction == Direction.CREDIT && t.categoryId == REFUND_CATEGORY) {
             s.refund += t.amountMinor
         } else if (t.direction == Direction.CREDIT) {
             s.income += t.amountMinor
@@ -54,6 +60,7 @@ fun summarize(txs: List<SummaryInput>): List<CurrencySummary> {
                 inMinor = s.income,
                 outMinor = s.out - s.refund,
                 refundMinor = s.refund,
+                cardPaymentMinor = s.cardPayments,
                 netMinor = s.income - (s.out - s.refund),
                 topSpending = s.cats.entries.map { CategorySpending(it.key, it.value) }.sortedByDescending { it.minor }
             )

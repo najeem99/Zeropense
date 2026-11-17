@@ -29,6 +29,7 @@ import com.najeemfasil.expense.core.toDateInput
 import com.najeemfasil.expense.data.LocalDb
 import com.najeemfasil.expense.data.rememberDbQuery
 import com.najeemfasil.expense.feature.accounts.accountLabel
+import com.najeemfasil.expense.feature.categories.CARD_PAYMENT_CATEGORY
 import com.najeemfasil.expense.feature.categories.CategoryKind
 import com.najeemfasil.expense.feature.categories.REFUND_CATEGORY
 import com.najeemfasil.expense.feature.categories.categoryLook
@@ -114,7 +115,8 @@ private fun TransactionForm(tx: Transaction?, lookups: Lookups) {
         Kind.EXPENSE
     }
     val categoryKind = if (kind == Kind.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
-    val categories = lookups.categories.filter { it.kind == categoryKind && it.id != REFUND_CATEGORY }
+    // A card bill payment has two sides: money out of the bank and money into the card.
+    val categories = lookups.categories.filter { (it.kind == categoryKind || it.id == CARD_PAYMENT_CATEGORY) && it.id != REFUND_CATEGORY }
     val setKind = { next: Kind ->
         if (next != kind) {
             form = if (next == Kind.REFUND) {

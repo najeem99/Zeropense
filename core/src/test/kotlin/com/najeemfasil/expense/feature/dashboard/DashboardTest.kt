@@ -53,6 +53,21 @@ class DashboardTest {
         assertEquals(listOf(50000L, 0L, 1200L, 50000L), listOf(s.inMinor, s.outMinor, s.refundMinor, s.netMinor))
     }
 
+    @Test
+    fun creditCardBillPaymentsAreNotSpendingOrIncome() {
+        val txs = listOf(
+            input(5000, Currency.AED, Direction.DEBIT, "shopping"),
+            input(5000, Currency.AED, Direction.DEBIT, "card-payment"),
+            input(5000, Currency.AED, Direction.CREDIT, "card-payment"),
+            input(20000, Currency.AED, Direction.DEBIT, "cash")
+        )
+        val s = summarize(txs).single()
+        assertEquals(listOf(0L, 25000L, 5000L), listOf(s.inMinor, s.outMinor, s.cardPaymentMinor))
+        assertEquals(listOf("cash", "shopping"), s.topSpending.map { it.categoryId })
+        val day = localTime(2026, 10, 1)
+        assertEquals(25000L, dailySpending(txs.map { it.copy(occurredAt = day) }, Currency.AED, day, 1, day).days.single())
+    }
+
     private val nameOf = { id: String? -> id ?: "Uncategorised" }
 
     @Test

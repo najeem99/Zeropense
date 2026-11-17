@@ -30,6 +30,7 @@ import com.najeemfasil.expense.core.formatMonth
 import com.najeemfasil.expense.core.startOfDay
 import com.najeemfasil.expense.data.rememberDbQuery
 import com.najeemfasil.expense.feature.categories.categoryLook
+import com.najeemfasil.expense.feature.categories.countsInTotals
 import com.najeemfasil.expense.feature.transactions.Lookups
 import com.najeemfasil.expense.feature.transactions.TransactionRow
 import com.najeemfasil.expense.feature.transactions.listAccepted
@@ -222,7 +223,12 @@ private fun TrendCard(f: Focus, onPick: (Long) -> Unit) {
 @Composable
 private fun DayCard(f: Focus, day: Long, lookups: Lookups, title: String? = null) {
     val txs by rememberDbQuery(listOf(day, f.currency, f.filter)) { db ->
-        listAccepted(db, day, dayAt(day, 1)).filter { it.direction == Direction.DEBIT && it.currency == f.currency && matchesCategory(f.filter, it.categoryId) }
+        listAccepted(db, day, dayAt(day, 1)).filter {
+            it.direction == Direction.DEBIT &&
+                it.currency == f.currency &&
+                matchesCategory(f.filter, it.categoryId) &&
+                (f.filter != null || countsInTotals(it.categoryId))
+        }
     }
     val list = txs ?: return
     Card {

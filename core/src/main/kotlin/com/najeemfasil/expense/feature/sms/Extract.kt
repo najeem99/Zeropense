@@ -6,6 +6,8 @@ import com.najeemfasil.expense.core.jsTrim
 import com.najeemfasil.expense.core.normalizeCurrency
 import com.najeemfasil.expense.core.parseAmountToMinor
 import com.najeemfasil.expense.core.parseSmsDate
+import com.najeemfasil.expense.feature.categories.CARD_PAYMENT_CATEGORY
+import com.najeemfasil.expense.feature.categories.CASH_CATEGORY
 
 /** Extra patterns a bank profile can try before the generic ones. Group 1 is the value. */
 interface ExtractHints {
@@ -129,6 +131,31 @@ fun smsSnippet(body: String): String {
 
 private val SALARY_WORDS = rx("\\b(salary|payroll|wps)\\b")
 private val TRANSFER_IN_WORDS = rx("\\b(transfer(red)?|remittance|received|aani|imps|neft|rtgs|upi|ipi)\\b")
+
+/** "Credit card payment", "payment of Rs 5,000 received towards your HDFC Bank Credit Card", "CC bill paid". */
+private val CARD_PAYMENT_WORDS = listOf(
+    rx("\\b(credit\\s*card|cc)\\s*(bill\\s*|dues?\\s*)?(payment|repayment|paid)\\b"),
+    rx("\\b(payment|repayment)\\b.{0,60}?\\b(towards|to|for|on|into)\\s+(your\\s+)?[a-z ]{0,25}?credit\\s*card\\b"),
+    rx("\\bpaid\\s+(towards|to|for)\\s+(your\\s+)?[a-z ]{0,25}?credit\\s*card\\b")
+)
+
+/** "ATM cash withdrawal", "withdrawn at ATM", "Cash Wdl", "cash advance" on a credit card. */
+private val CASH_WORDS = listOf(
+    rx("\\bcash\\s*(withdrawal|withdrawn|wdl|w/d|advance)\\b"),
+    rx("\\batm\\s*(cash\\s*)?(withdrawal|wdl|w/d|txn|transaction)\\b"),
+    rx("\\b(withdrawn?|withdrawal|wdl)\\b.{0,60}?\\batm\\b"),
+    rx("\\b(at|from|using)\\s+(an?\\s+|the\\s+)?atm\\b")
+)
+
+/**
+ * Categories that come from what kind of transaction the SMS describes, not from the shop:
+ * a credit card bill payment (either side of it) or a cash withdrawal (money out only).
+ */
+fun typeCategory(body: String, direction: Direction): String? = when {
+    CARD_PAYMENT_WORDS.any { it.containsMatchIn(body) } -> CARD_PAYMENT_CATEGORY
+    direction == Direction.DEBIT && CASH_WORDS.any { it.containsMatchIn(body) } -> CASH_CATEGORY
+    else -> null
+}
 
 /** For money coming in: which default income category it belongs to, if it's clear. */
 fun incomeCategory(body: String): String? = when {

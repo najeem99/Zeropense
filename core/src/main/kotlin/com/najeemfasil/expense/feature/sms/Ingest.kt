@@ -112,7 +112,10 @@ fun processSms(sms: RawSms, ctx: IngestContext): IngestResult {
 
     val isIncome = parsed.direction == Direction.CREDIT
     val merchant = parsed.merchant ?: if (isIncome) incomeLabel(sms.body) else null
-    val categoryId = suggestCategory(merchant, ctx.rules) ?: if (isIncome) incomeCategory(sms.body) else null
+    // A card bill payment or ATM withdrawal is that, whatever place the message names.
+    val categoryId = typeCategory(sms.body, parsed.direction)
+        ?: suggestCategory(merchant, ctx.rules)
+        ?: if (isIncome) incomeCategory(sms.body) else null
 
     return IngestResult.Draft(
         TransactionDraft(
